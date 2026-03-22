@@ -1,4 +1,5 @@
 #pragma once
+#define MOD "modules/gps/gps.h"
 #include "TinyGPSPlus.h"
 #include "flags.h"
 #include "modules/logger/system_logger.h"
@@ -19,7 +20,8 @@ public:
   int init();
 };
 
-gps::gps(HardwareSerial *data_stream) : _data_stream(data_stream), _logger(nullptr){
+gps::gps(HardwareSerial *data_stream)
+    : _data_stream(data_stream), _logger(nullptr) {
   _data_stream = data_stream;
   _gps = new TinyGPSPlus();
 }
@@ -40,16 +42,27 @@ int gps::init() {
 }
 
 int gps::parse_task(unsigned long timeout_ms) {
+
+#ifdef DEEP_DEBUG
+  if (_logger != nullptr) {
+    _logger->deep_debug(String(MOD) + ": parse_task: Begin");
+  }
+#endif
   unsigned long timeout = millis() + timeout_ms;
+#ifdef DEEP_DEBUG
+  if (_logger != nullptr) {
+    _logger->deep_debug(String(MOD) + ": parse_task: Entering Parse Loop");
+  }
+#endif
   while (_data_stream->available() > 0) {
     if (_gps->encode(_data_stream->read())) {
       _lock_valid = true;
       _last_lock = millis();
     }
     if (millis() > timeout) {
-#ifdef DEBUG
+#ifdef DEEP_DEBUG
       if (_logger != nullptr) {
-        _logger->debug("GPS Parser timed out, exiting task");
+        _logger->deep_debug(String(MOD) + ": parse_task: Parse Loop Timed Out");
       }
 #endif
       return 1;
@@ -57,3 +70,4 @@ int gps::parse_task(unsigned long timeout_ms) {
   }
   return 0;
 }
+#undef MOD
