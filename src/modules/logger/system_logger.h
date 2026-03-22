@@ -25,6 +25,10 @@ public:
     #ifdef DEBUG
     int debug(String message);
     #endif
+
+    #ifdef DEEP_DEBUG
+    int deep_debug(String message);
+    #endif
 };
 
 system_logger::system_logger(HardwareSerial *output)
@@ -67,5 +71,11 @@ int system_logger::error(String message) {
 #ifdef DEBUG
 int system_logger::debug(String message) {
     return this->print_message(" [DEBUG] ", message);
+}
+#endif
+
+#ifdef DEEP_DEBUG
+int system_logger::deep_debug(String message) {
+    return this->print_message(" [DEEP_DEBUG] ", message);
 }
 #endif
