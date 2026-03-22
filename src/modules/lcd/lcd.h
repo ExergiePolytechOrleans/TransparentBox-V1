@@ -28,7 +28,7 @@ lcd::~lcd() {}
 int lcd::init() {
 #ifdef DEEP_DEBUG
   if (_logger != nullptr) {
-    _logger->deep_debug(String(MOD) + ": LCD init Begin");
+    _logger->deep_debug(String(MOD) + ": init: Begin");
   }
 #endif
   _display->init();
@@ -37,7 +37,7 @@ int lcd::init() {
   _display->setCursor(0, 0);
 #ifdef DEEP_DEBUG
   if (_logger != nullptr) {
-    _logger->deep_debug(String(MOD) + ": LCD init End");
+    _logger->deep_debug(String(MOD) + ": init: End");
   }
 #endif
   return 0;
@@ -46,7 +46,7 @@ int lcd::init() {
 int lcd::print_message(String message) {
 #ifdef DEEP_DEBUG
   if (_logger != nullptr) {
-    _logger->deep_debug(String(MOD) + ": LCD print_message Begin");
+    _logger->deep_debug(String(MOD) + ": print_message: Begin");
   }
 #endif
   _display->clear();
@@ -59,7 +59,7 @@ int lcd::print_message(String message) {
 #endif
 #ifdef DEEP_DEBUG
   if (_logger != nullptr) {
-    _logger->deep_debug(String(MOD) + ": LCD print_message End");
+    _logger->deep_debug(String(MOD) + ": print_message: End");
   }
 #endif
   return 0;
