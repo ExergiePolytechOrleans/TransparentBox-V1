@@ -1,0 +1,66 @@
+# ─────────────────────────────
+# PlatformIO
+# ─────────────────────────────
+.pio/
+.pioenvs/
+.piolibdeps/
+.piolibdeps_cache/
+.platformio/
+
+# Build artifacts
+build/
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+
+# ─────────────────────────────
+# VSCode / IDE
+# ─────────────────────────────
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+
+# JetBrains (WebStorm, CLion, etc.)
+.idea/
+*.iml
+
+# ─────────────────────────────
+# Python (if using tooling)
+# ─────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# ─────────────────────────────
+# OS junk
+# ─────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─────────────────────────────
+# Logs / temp
+# ─────────────────────────────
+*.log
+*.tmp
+
+# ─────────────────────────────
+# Upload artifacts / debug
+# ─────────────────────────────
+firmware.bin
+firmware.elf
+
+# ─────────────────────────────
+# Secrets / local config
+# ─────────────────────────────
+.env
+*.key
+*.pem
+
+# ─────────────────────────────
+# Optional: local overrides
+# ─────────────────────────────
+platformio_override.ini
