@@ -1,4 +1,5 @@
 #pragma once
+#define MOD "modules/lcd/lcd.h"
 #include "flags.h"
 #include "modules/logger/system_logger.h"
 #include <LiquidCrystal_I2C.h>
@@ -25,14 +26,29 @@ lcd::lcd(system_logger *logger) {
 lcd::~lcd() {}
 
 int lcd::init() {
+    #ifdef DEEP_DEBUG
+    if (_logger != nullptr) {
+        _logger->debug(String(MOD) + ": LCD init Begin");
+    }
+    #endif
   _display->init();
   _display->backlight();
   _display->clear();
   _display->setCursor(0, 0);
+    #ifdef DEEP_DEBUG
+    if (_logger != nullptr) {
+        _logger->debug(String(MOD) + ": LCD init End");
+    }
+    #endif
   return 0;
 }
 
 int lcd::print_message(String message) {
+    #ifdef DEEP_DEBUG
+    if (_logger != nullptr) {
+        _logger->debug(String(MOD) + ": LCD print_message Begin");
+    }
+    #endif
   _display->clear();
   _display->setCursor(0, 0);
   _display->print(message);
@@ -41,5 +57,12 @@ int lcd::print_message(String message) {
     _logger->info(message);
   }
   #endif
+    #ifdef DEEP_DEBUG
+    if (_logger != nullptr) {
+        _logger->debug(String(MOD) + ": LCD print_message End");
+    }
+    #endif
   return 0;
 }
+
+#undef MOD
