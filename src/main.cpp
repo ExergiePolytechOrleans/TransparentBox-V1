@@ -7,6 +7,11 @@
 #include "modules/logger/system_logger.h"
 #include <Arduino.h>
 #include <avr/wdt.h>
+#include "base/modules.h"
+#include "base/module_base.h"
+#include "base/router.h"
+
+
 
 system_logger *logger_output = new system_logger(&Serial);
 
@@ -15,10 +20,16 @@ gps *gps_module = new gps(&Serial2, logger_output);
 config *system_config = new config(logger_output);
 cmd *command_handler = new cmd(&Serial, logger_output);
 
+
 void setup() {
   wdt_disable();
+
+  modules[MOD_LCD] = driver_display;
+  modules[MOD_GPS] = gps_module;
+  modules[MOD_CFG] = system_config;
+  modules[MOD_CMD] = command_handler;
+
   driver_display->init();
-  driver_display->set_gps(gps_module);
   driver_display->print_message("Starting Initialization");
   delay(1000);
 
@@ -42,11 +53,12 @@ void setup() {
   gps_module->init();
   delay(1000);
   driver_display->print_message("GPS Init Complete");
-  driver_display->switch_screen(screen::gps_debug);
+  router::send(MOD_LCD, TASK_DISPLAY_GPS_DEBUG);
+  router::send(MOD_CFG, TASK_CONFIG_TRACK_DETECT);
 }
 
 void loop() {
-  gps_module->parse_task(500);
-  driver_display->render_task();
-  command_handler->parse_task(500);
+  gps_module->loop();
+  driver_display->loop();
+  command_handler->parse_task();
 }
