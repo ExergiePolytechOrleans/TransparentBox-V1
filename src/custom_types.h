@@ -9,9 +9,17 @@ struct vehicle_config{
     uint8_t selected_track = 0;
 };
 
+struct lat_lng {
+    double lat;
+    double lng;
+};
+
 struct track_data {
-    char name[64];
-    
+    uint16_t magic = CONFIG_MAGIC;
+    int id;
+    char name[32];
+    lat_lng pt_a;
+    lat_lng pt_b;
 };
 
 struct gps_sub_data {
