@@ -14,29 +14,33 @@ config *system_config = new config(logger_output);
 
 void setup() {
   driver_display->init();
+  driver_display->set_gps(gps_module);
   driver_display->print_message("Starting Initialization");
   delay(1000);
 
   driver_display->print_message("Serial Init...");
   Serial.begin(115200);
-  delay(500);
+  delay(1000);
   driver_display->print_message("Serial Init Complete");
-  delay(500);
+  delay(1000);
 
   driver_display->print_message("Config Init...");
   int result = system_config->auto_init();
-  delay(500);
+  delay(1000);
   if (result != 0) {
     driver_display->print_message("Configuration Read Failed");
   } else {
     driver_display->print_message("Config Init Complete");
   }
-  delay(500);
+  delay(1000);
 
   driver_display->print_message("GPS Init...");
   gps_module->init();
-  delay(500);
+  delay(1000);
   driver_display->print_message("GPS Init Complete");
+  driver_display->switch_screen(screen::gps_debug);
 }
 
-void loop() { gps_module->parse_task(500); }
+void loop() { gps_module->parse_task(500); 
+driver_display->render_task();
+}
