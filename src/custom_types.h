@@ -1,3 +1,4 @@
+#pragma once
 #include <inttypes.h>
 
 #define CONFIG_MAGIC 0xBEEF
@@ -11,4 +12,18 @@ struct vehicle_config{
 struct track_data {
     char name[64];
     
+};
+
+struct gps_sub_data {
+    uint32_t age;
+    bool valid;
+    double value;
+};
+
+struct gps_data {
+    gps_sub_data altitude;
+    gps_sub_data lat;
+    gps_sub_data lng;
+    gps_sub_data speed;
+    gps_sub_data course;
 };
