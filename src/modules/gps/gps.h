@@ -1,16 +1,16 @@
 #pragma once
-#define MOD "modules/gps/gps.h"
+#include "custom_types.h"
 #include "TinyGPSPlus.h"
 #include "flags.h"
 #include "modules/logger/system_logger.h"
+
+#define MOD "modules/gps/gps.h"
 
 class gps {
 private:
   TinyGPSPlus *_gps;
   HardwareSerial *_data_stream;
   system_logger *_logger;
-  bool _lock_valid = false;
-  unsigned long _last_lock = 0;
 
 public:
   gps(HardwareSerial *data_stream);
@@ -18,6 +18,8 @@ public:
   ~gps();
   int parse_task(unsigned long timeout_ms = 500);
   int init();
+  gps_data get_data();
+  
 };
 
 gps::gps(HardwareSerial *data_stream)
@@ -55,10 +57,7 @@ int gps::parse_task(unsigned long timeout_ms) {
   }
 #endif
   while (_data_stream->available() > 0) {
-    if (_gps->encode(_data_stream->read())) {
-      _lock_valid = true;
-      _last_lock = millis();
-    }
+    _gps->encode(_data_stream->read());
     if (millis() > timeout) {
 #ifdef DEEP_DEBUG
       if (_logger != nullptr) {
@@ -69,5 +68,31 @@ int gps::parse_task(unsigned long timeout_ms) {
     }
   }
   return 0;
+}
+
+gps_data gps::get_data() {
+  gps_data output;
+
+  output.altitude.age = _gps->altitude.age();
+  output.altitude.valid = _gps->altitude.isValid();
+  output.altitude.value = _gps->altitude.meters();
+
+  output.lat.age = _gps->location.age();
+  output.lat.valid = _gps->location.isValid();
+  output.lat.value = _gps->location.lat();
+
+  output.lng.age = _gps->location.age();
+  output.lng.valid = _gps->location.isValid();
+  output.lng.value = _gps->location.lng();
+
+  output.speed.age = _gps->speed.age();
+  output.speed.valid = _gps->speed.isValid();
+  output.speed.value = _gps->speed.kmph();
+
+  output.course.age = _gps->course.age();
+  output.course.valid = _gps->course.isValid();
+  output.course.value = _gps->course.deg();
+  
+  return output;
 }
 #undef MOD
