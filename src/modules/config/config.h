@@ -9,6 +9,7 @@ private:
   vehicle_config _config;
   system_logger *_logger;
     bool _valid_config;
+    track_data _loaded_track;
 public:
   config();
   config(system_logger *logger);
