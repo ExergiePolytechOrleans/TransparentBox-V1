@@ -3,24 +3,32 @@
 #include "TinyGPSPlus.h"
 #include "flags.h"
 #include "modules/logger/system_logger.h"
-
+#include "base/task.h"
+#include "base/ring_buffer.h"
+#include "base/module_base.h"
+#include "data/gps_store.h"
 #define MOD "modules/gps/gps.h"
 
-class gps {
+class gps : public module_base{
 private:
   TinyGPSPlus *_gps;
   HardwareSerial *_data_stream;
   system_logger *_logger;
-
+  ring_buffer<Task, 16> _queue;
 public:
+  int push(const Task& task) override;
   gps(HardwareSerial *data_stream);
   gps(HardwareSerial *data_stream, system_logger *logger);
   ~gps();
-  int parse_task(unsigned long timeout_ms = 500);
+  int loop(unsigned long timeout_ms = 500);
   int init();
   gps_data get_data();
   
 };
+
+int gps::push(const Task& task) {
+  return _queue.push(task);
+}
 
 gps::gps(HardwareSerial *data_stream)
     : _data_stream(data_stream), _logger(nullptr) {
@@ -43,27 +51,14 @@ int gps::init() {
   return 0;
 }
 
-int gps::parse_task(unsigned long timeout_ms) {
+int gps::loop(unsigned long timeout_ms) {
 
-#ifdef DEEP_DEBUG
-  if (_logger != nullptr) {
-    _logger->deep_debug(String(MOD) + ": parse_task: Begin");
-  }
-#endif
   unsigned long timeout = millis() + timeout_ms;
-#ifdef DEEP_DEBUG
-  if (_logger != nullptr) {
-    _logger->deep_debug(String(MOD) + ": parse_task: Entering Parse Loop");
-  }
-#endif
   while (_data_stream->available() > 0) {
-    _gps->encode(_data_stream->read());
+    if (_gps->encode(_data_stream->read())) {
+      gps_global_write(this->get_data());
+    }
     if (millis() > timeout) {
-#ifdef DEEP_DEBUG
-      if (_logger != nullptr) {
-        _logger->deep_debug(String(MOD) + ": parse_task: Parse Loop Timed Out");
-      }
-#endif
       return 1;
     }
   }

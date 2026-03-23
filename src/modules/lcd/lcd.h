@@ -3,6 +3,9 @@
 #include "modules/logger/system_logger.h"
 #include "modules/gps/gps.h"
 #include <LiquidCrystal_I2C.h>
+#include "base/task.h"
+#include "base/ring_buffer.h"
+#include "base/module_base.h"
 #define MOD "modules/lcd/lcd.h"
 
 namespace screen
@@ -14,7 +17,7 @@ typedef enum lcd_screen {
 };
 } // namespace screen
 
-class lcd {
+class lcd : public module_base{
 private:
   LiquidCrystal_I2C *_display;
   bool _dispaly_cleared;
@@ -22,7 +25,7 @@ private:
   screen::lcd_screen _screen;
   unsigned long _last_render;
   unsigned long _frame_duration;
-  gps *_gps;
+  ring_buffer<Task, 16> _queue;
   void clear();
   void print(const String& msg);
   void print(char);
@@ -32,15 +35,16 @@ private:
   void print(long val, int base);
   void print(unsigned int val, int base);
   void print(int val, int base);
+  
+  int render_gps_debug();
 public:
+  int push(const Task& task) override;
   lcd();
   lcd(system_logger *logger);
   ~lcd();
   int init();
-  int set_gps(gps *gps);
   int print_message(String message);
-  int switch_screen(screen::lcd_screen new_screen);
-  int render_task();
+  int loop(unsigned long timeout_ms=500);
 };
 
 void lcd::clear() {
@@ -88,6 +92,49 @@ void lcd::print(unsigned int i, int base=10) {
 void lcd::print(int i, int base=10) {
     _display->print(i, base);
     _dispaly_cleared = false;
+}
+
+int lcd::render_gps_debug() {
+  
+    this->clear();
+    gps_data data;
+    gps_global_read(data);
+
+    _display->setCursor(0,0);
+    this->print("Alt: ");
+    if (data.altitude.valid) {
+      this->print(data.altitude.value, 5);
+    } else {
+      this->print("not valid");
+    }
+
+    _display->setCursor(0,1);
+    this->print("Lat: ");
+    if (data.lat.valid) {
+      this->print(data.lat.value, 5);
+    } else {
+      this->print("not valid");
+    }
+
+    _display->setCursor(0,2);
+    this->print("Lng: ");
+    if (data.lng.valid) {
+      this->print(data.lng.value, 5);
+    } else {
+      this->print("not valid");
+    }
+
+    _display->setCursor(0,3);
+    this->print("Spd: ");
+    if (data.speed.valid) {
+      this->print(data.speed.value, 5);
+    } else {
+      this->print("not valid");
+    }
+}
+
+int lcd::push(const Task& task) {
+  return _queue.push(task);
 }
 
 lcd::lcd(): _logger(nullptr), _screen(screen::blank), _last_render(0), _frame_duration(500), _dispaly_cleared(false), _gps(nullptr) { _display = new LiquidCrystal_I2C(0x27, 20, 4); }
@@ -196,13 +243,32 @@ int lcd::print_message(String message) {
   return 0;
 }
 
-int lcd::switch_screen(screen::lcd_screen new_screen) {
-  _screen = new_screen; 
-  return 0;
-}
-
-int lcd::render_task() {
+int lcd::loop(unsigned long timeout_ms) {
   unsigned long now = millis();
+  unsigned long task_timeout = now + timeout_ms;
+  while (_queue.size() > 0) {
+    Task next_task;
+    int res = _queue.pop(next_task);
+    if (res != 0 ) {
+      if (millis() > task_timeout) {
+        break;
+      }
+      continue;
+    }
+    switch (next_task.type)
+    {
+    case TASK_DISPLAY_GPS_DEBUG:
+      _screen = screen::gps_debug;
+      break;
+    
+    default:
+      break;
+    }
+    if (millis() > task_timeout) {
+      break;
+    }
+
+  }
   if (now < _last_render + _frame_duration) {
     return 1;
   }
@@ -213,44 +279,7 @@ int lcd::render_task() {
     break;
     
   case screen::gps_debug:
-    this->clear();
-    if (_gps == nullptr) {
-      this->print_message("No GPS Found");
-      break;
-    }
-    gps_data data = _gps->get_data();
-
-    _display->setCursor(0,0);
-    this->print("Alt: ");
-    if (data.altitude.valid) {
-      this->print(data.altitude.value, 5);
-    } else {
-      this->print("not valid");
-    }
-
-    _display->setCursor(0,1);
-    this->print("Lat: ");
-    if (data.lat.valid) {
-      this->print(data.lat.value, 5);
-    } else {
-      this->print("not valid");
-    }
-
-    _display->setCursor(0,2);
-    this->print("Lng: ");
-    if (data.lng.valid) {
-      this->print(data.lng.value, 5);
-    } else {
-      this->print("not valid");
-    }
-
-    _display->setCursor(0,3);
-    this->print("Spd: ");
-    if (data.speed.valid) {
-      this->print(data.speed.value, 5);
-    } else {
-      this->print("not valid");
-    }
+    this->render_gps_debug();
     break;
   
   default:

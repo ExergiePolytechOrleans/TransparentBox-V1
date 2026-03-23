@@ -1,9 +1,12 @@
 #pragma once
 #include "custom_types.h"
 #include "modules/logger/system_logger.h"
+#include "base/task.h"
+#include "base/ring_buffer.h"
+#include "base/module_base.h"
 #include <avr/wdt.h>
 
-class cmd {
+class cmd: public module_base{
 private:
   HardwareSerial *_data_stream;
   unsigned long _baud_rate = 115200;
@@ -12,8 +15,9 @@ private:
   unsigned int _idx = 0;
   bool _buf_open = false;
   int try_parse();
-
+  ring_buffer<Task, 16> _queue;
 public:
+    int push(const Task& task) override;
   cmd(HardwareSerial *data_stream);
   cmd(HardwareSerial *data_stream, system_logger *logger);
   ~cmd();
@@ -39,6 +43,10 @@ int cmd::try_parse() {
     }
   }
   return 0;
+}
+
+int cmd::push(const Task& task) {
+  return _queue.push(task);
 }
 
 cmd::cmd(HardwareSerial *data_stream)

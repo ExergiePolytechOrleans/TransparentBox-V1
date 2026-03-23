@@ -1,8 +1,11 @@
 #pragma once
 #include <Arduino.h>
 #include "flags.h"
+#include "base/ring_buffer.h"
+#include "base/task.h"
+#include "base/module_base.h"
 
-class system_logger 
+class system_logger
 {
 private:
     HardwareSerial *_output;
