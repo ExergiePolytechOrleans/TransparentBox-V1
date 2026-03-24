@@ -64,4 +64,5 @@ void loop() {
   gps_module->loop();
   driver_display->loop();
   command_handler->parse_task();
+  system_config->loop();
 }
