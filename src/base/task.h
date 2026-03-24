@@ -10,11 +10,12 @@ enum module_id : uint8_t {
     MOD_CFG,
     MOD_GPS,
     MOD_LCD,
-    MOD_COUNT
+    MOD_COUNT,
+    MOD_NULL
 };
 
 enum task_type : uint8_t {
-    TASK_NONE,
+    TASK_NULL,
     TASK_DISPLAY_GPS_DEBUG,
     TASK_CONFIG_TRACK_DETECT,
 };
