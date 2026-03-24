@@ -316,7 +316,7 @@ int lcd::loop(unsigned long timeout_ms) {
     break;
     
   case screen::msg_gps_fix:
-    
+    this->render_msg_gps_fix(); 
     break;
   
   default:
