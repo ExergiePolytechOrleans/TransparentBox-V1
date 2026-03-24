@@ -141,9 +141,9 @@ int lcd::push(const Task& task) {
   return _queue.push(task);
 }
 
-lcd::lcd(): _logger(nullptr), _screen(screen::blank), _last_render(0), _frame_duration(500), _dispaly_cleared(false) { _display = new LiquidCrystal_I2C(0x27, 20, 4); }
+lcd::lcd(): _logger(nullptr), _screen(screen::blank), _last_render(0), _frame_duration(2000), _dispaly_cleared(false) { _display = new LiquidCrystal_I2C(0x27, 20, 4); }
 
-lcd::lcd(system_logger *logger): _logger(logger), _screen(screen::blank), _last_render(0), _frame_duration(500), _dispaly_cleared(false) {
+lcd::lcd(system_logger *logger): _logger(logger), _screen(screen::blank), _last_render(0), _frame_duration(2000), _dispaly_cleared(false) {
   _display = new LiquidCrystal_I2C(0x27, 20, 4);
 
 }
