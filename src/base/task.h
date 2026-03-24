@@ -17,6 +17,7 @@ enum module_id : uint8_t {
 enum task_type : uint8_t {
     TASK_NULL,
     TASK_DISPLAY_GPS_DEBUG,
+    TASK_DISPLAY_MSG_GPS_FIX,
     TASK_CONFIG_TRACK_DETECT,
 };
 

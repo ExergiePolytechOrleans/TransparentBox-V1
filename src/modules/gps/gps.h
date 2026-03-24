@@ -10,6 +10,7 @@
 #include "base/ring_buffer.h"
 #include "base/module_base.h"
 #include "data/gps_store.h"
+#include "base/router.h"
 #define MOD "modules/gps/gps.h"
 
 class gps : public module_base{
@@ -18,6 +19,7 @@ private:
   HardwareSerial *_data_stream;
   system_logger *_logger;
   ring_buffer<Task, 16> _queue;
+  uint32_t _last_fix_val = 0;
 public:
   int push(const Task& task) override;
   gps(HardwareSerial *data_stream);
@@ -60,6 +62,11 @@ int gps::loop(unsigned long timeout_ms) {
   while (_data_stream->available() > 0) {
     if (_gps->encode(_data_stream->read())) {
       gps_global_write(this->get_data());
+      uint32_t current_fix_val = _gps->sentencesWithFix();
+      if (_last_fix_val == 0 && current_fix_val > 0) {
+        router::send(MOD_LCD, TASK_DISPLAY_MSG_GPS_FIX, 2000);  
+      }
+      _last_fix_val = current_fix_val;
     }
     if (millis() > timeout) {
       return 1;
@@ -90,6 +97,8 @@ gps_data gps::get_data() {
   output.course.age = _gps->course.age();
   output.course.valid = _gps->course.isValid();
   output.course.value = _gps->course.deg();
+  
+  output.num_fix = _gps->sentencesWithFix();
   
   return output;
 }

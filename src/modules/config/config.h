@@ -18,10 +18,13 @@ private:
   track_data _loaded_track;
   ring_buffer<Task, 16> _queue;
   Task _active_task = {};
+  uint8_t _task_memory[64];
+  bool _task_memory_stale = true;
   int read_cfg();
   int write_cfg();
   int write_cfg(const vehicle_config &new_config);
-  int handle_active_task();
+  int handle_active_task(unsigned long timeout_ms);
+
 
 public:
   int push(const Task &task) override;
@@ -49,9 +52,10 @@ int config::write_cfg(const vehicle_config &new_config) {
   return 0;
 }
 
-int config::handle_active_task() {
-    //TODO: handle active task
-   return 0; 
+int config::handle_active_task(unsigned long timeout_ms) {
+  unsigned long now = millis();
+  unsigned long task_timeout = now + timeout_ms;
+  return 0;
 }
 
 int config::auto_init() {
@@ -79,13 +83,14 @@ int config::auto_init() {
 }
 
 int config::loop(unsigned long timeout_ms) {
-  unsigned long now = millis();
-  unsigned long task_timeout = now + timeout_ms;
   if (_active_task.type != TASK_NULL && _active_task.target != MOD_NULL) {
-    this->handle_active_task();
+    this->handle_active_task(timeout_ms);
     return 0;
   }
-  _queue.pop(_active_task);
-  this->handle_active_task();
+  int res = _queue.pop(_active_task);
+  if (res == 0) {
+
+    this->handle_active_task(timeout_ms);
+  }
   return 0;
 }

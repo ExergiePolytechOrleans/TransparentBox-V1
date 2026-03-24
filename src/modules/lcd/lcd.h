@@ -18,6 +18,7 @@ namespace screen
 typedef enum lcd_screen {
   blank, 
   gps_debug,
+  msg_gps_fix,
 };
 } // namespace screen
 
@@ -27,9 +28,12 @@ private:
   bool _dispaly_cleared;
   system_logger *_logger = nullptr;
   screen::lcd_screen _screen;
+  screen::lcd_screen _previous_screen;
   unsigned long _last_render;
   unsigned long _frame_duration;
+  long _hold_till_frame = -1;
   ring_buffer<Task, 16> _queue;
+  uint32_t _frame_ctr = 0;
   void clear();
   void print(const String& msg);
   void print(char);
@@ -41,6 +45,7 @@ private:
   void print(int val, int base);
   
   int render_gps_debug();
+  int render_msg_gps_fix();
 public:
   int push(const Task& task) override;
   lcd();
@@ -135,6 +140,17 @@ int lcd::render_gps_debug() {
     } else {
       this->print("not valid");
     }
+    return 0;
+}
+
+
+int lcd::render_msg_gps_fix() {
+  this->clear();
+  _display->setCursor(0,2);
+  this->print("INFO");
+  _display->setCursor(0,3);
+  this->print("GPS FIX OK");
+  return 0;
 }
 
 int lcd::push(const Task& task) {
@@ -259,7 +275,18 @@ int lcd::loop(unsigned long timeout_ms) {
     switch (next_task.type)
     {
     case TASK_DISPLAY_GPS_DEBUG:
+      _previous_screen = _screen;
       _screen = screen::gps_debug;
+      break;
+    
+    case TASK_DISPLAY_MSG_GPS_FIX:
+      _previous_screen = _screen;
+      _screen = screen::msg_gps_fix;
+      unsigned long _msg_duration = next_task.data/_frame_duration;
+      if (_msg_duration == 0) {
+        _msg_duration == 1;
+      }
+      _hold_till_frame = _frame_ctr + 1 + _msg_duration;
       break;
     
     default:
@@ -273,6 +300,11 @@ int lcd::loop(unsigned long timeout_ms) {
   if (now < _last_render + _frame_duration) {
     return 1;
   }
+  
+  if (_frame_ctr == _hold_till_frame) {
+    _screen = _previous_screen;
+    _hold_till_frame = -1;
+  }
   switch (_screen)
   {
   case screen::blank:
@@ -282,11 +314,16 @@ int lcd::loop(unsigned long timeout_ms) {
   case screen::gps_debug:
     this->render_gps_debug();
     break;
+    
+  case screen::msg_gps_fix:
+    
+    break;
   
   default:
     break;
   }
   _last_render = millis();
+  _frame_ctr++;
   return 1;
 }
 

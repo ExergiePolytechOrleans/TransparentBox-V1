@@ -37,6 +37,7 @@ struct gps_data {
     gps_sub_data lng;
     gps_sub_data speed;
     gps_sub_data course;
+    uint32_t num_fix;
 };
 
 inline void gps_sub_copy_from_volatile(gps_sub_data& dst, const volatile gps_sub_data& src) {
@@ -57,6 +58,7 @@ inline void gps_copy_from_volatile(gps_data& dst, const volatile gps_data& src) 
     gps_sub_copy_from_volatile(dst.lng,      src.lng);
     gps_sub_copy_from_volatile(dst.speed,    src.speed);
     gps_sub_copy_from_volatile(dst.course,   src.course);
+    dst.num_fix = src.num_fix;
 }
 
 inline void gps_copy_to_volatile(volatile gps_data& dst, const gps_data& src) {
@@ -65,4 +67,5 @@ inline void gps_copy_to_volatile(volatile gps_data& dst, const gps_data& src) {
     gps_sub_copy_to_volatile(dst.lng,      src.lng);
     gps_sub_copy_to_volatile(dst.speed,    src.speed);
     gps_sub_copy_to_volatile(dst.course,   src.course);
+    dst.num_fix = src.num_fix;
 }
