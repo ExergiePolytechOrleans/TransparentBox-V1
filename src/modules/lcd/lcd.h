@@ -286,7 +286,7 @@ int lcd::loop(unsigned long timeout_ms) {
       if (_msg_duration == 0) {
         _msg_duration == 1;
       }
-      _hold_till_frame = _frame_ctr + 1 + _msg_duration;
+      _hold_till_frame = _frame_ctr + _msg_duration;
       break;
     
     default:
@@ -301,7 +301,7 @@ int lcd::loop(unsigned long timeout_ms) {
     return 1;
   }
   
-  if (_frame_ctr == _hold_till_frame) {
+  if (_hold_till_frame >= 0 && _frame_ctr >= _hold_till_frame) {
     _screen = _previous_screen;
     _hold_till_frame = -1;
   }
