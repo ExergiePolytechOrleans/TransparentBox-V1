@@ -8,8 +8,8 @@
 struct vehicle_config{
     uint16_t magic = CONFIG_MAGIC;
     bool auto_detect_track = true;
-    uint8_t num_tracks = 0;
     uint8_t track_fallback = 0;
+    bool track_slot_occupied[8] = {false};
 };
 
 struct lat_lng {
