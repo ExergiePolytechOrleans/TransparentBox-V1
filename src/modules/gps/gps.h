@@ -65,6 +65,7 @@ int gps::loop(unsigned long timeout_ms) {
       uint32_t current_fix_val = _gps->sentencesWithFix();
       if (_last_fix_val == 0 && current_fix_val > 0) {
         router::send(MOD_LCD, TASK_DISPLAY_MSG_GPS_FIX, 2000);  
+        router::send(MOD_CFG, TASK_CONFIG_TRACK_DETECT);  
       }
       _last_fix_val = current_fix_val;
     }

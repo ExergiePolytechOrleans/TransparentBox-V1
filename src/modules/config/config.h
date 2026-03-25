@@ -28,6 +28,7 @@ private:
   system_logger *_logger;
   bool _valid_config;
   track_data _loaded_track;
+  bool _is_track_loaded = false;
   ring_buffer<Task, 16> _queue;
   Task _active_task = {};
   uint8_t _task_memory[64];
@@ -114,7 +115,9 @@ int config::handle_active_task(unsigned long timeout_ms) {
   switch (_active_task.type)
   {
   case TASK_CONFIG_TRACK_DETECT:
-    return task_config_detect_track(timeout_ms);
+    if (!_is_track_loaded) {
+      return task_config_detect_track(timeout_ms);
+    }
     break;
   
   default:
@@ -188,5 +191,6 @@ int config::load_track(unsigned int idx) {
   }
   _loaded_track = temp;
   track_global_write(_loaded_track); 
+  _is_track_loaded = true;
   return 0;
 }
