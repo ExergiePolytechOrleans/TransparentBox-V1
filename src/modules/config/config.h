@@ -10,6 +10,8 @@
 #include "modules/logger/system_logger.h"
 #include <EEPROM.h>
 #include "data/gps_store.h"
+#include "data/track_store.h"
+#include "base/router.h"
 
 struct task_config_track_detect_data {
   unsigned short last_checked = 0;
@@ -96,6 +98,7 @@ int config::task_config_detect_track(unsigned long timeout_ms) {
         this->load_track(task_data.smallest_idx);  
         _task_memory_stale = true;
         _active_task = {MOD_NULL, TASK_NULL, 0};
+        router::send(MOD_LCD, TASK_DISPLAY_MSG_TRACK_DETECT_OK, 4000);
         return 0;
       }
     }
@@ -184,5 +187,6 @@ int config::load_track(unsigned int idx) {
     return 1;
   }
   _loaded_track = temp;
+  track_global_write(_loaded_track); 
   return 0;
 }

@@ -10,6 +10,7 @@
 #include "base/ring_buffer.h"
 #include "base/module_base.h"
 #include "data/gps_store.h"
+#include "data/track_store.h"
 #define MOD "modules/lcd/lcd.h"
 
 namespace screen
@@ -19,6 +20,7 @@ typedef enum lcd_screen {
   blank, 
   gps_debug,
   msg_gps_fix,
+  msg_track_detect_ok,
 };
 } // namespace screen
 
@@ -46,6 +48,7 @@ private:
   
   int render_gps_debug();
   int render_msg_gps_fix();
+  int render_msg_track_detect_ok();
 public:
   int push(const Task& task) override;
   lcd();
@@ -146,10 +149,24 @@ int lcd::render_gps_debug() {
 
 int lcd::render_msg_gps_fix() {
   this->clear();
-  _display->setCursor(0,2);
-  this->print("INFO");
-  _display->setCursor(0,3);
-  this->print("GPS FIX OK");
+  _display->setCursor(6,1);
+  this->print("GPS INFO");
+  _display->setCursor(7,2);
+  this->print("FIX OK");
+  return 0;
+}
+
+int lcd::render_msg_track_detect_ok() {
+  this->clear();
+  _display->setCursor(6,0);
+  this->print("GPS INFO");
+  _display->setCursor(3,1);
+  this->print("TRACK DETECTED");
+  track_data temp; 
+  track_global_read(temp);
+  strlen(temp.name);
+  _display->setCursor((20 - strlen(temp.name))/2, 2);
+  this->print(temp.name);
   return 0;
 }
 
@@ -288,6 +305,16 @@ int lcd::loop(unsigned long timeout_ms) {
       }
       _hold_till_frame = _frame_ctr + _msg_duration;
       break;
+      
+    case TASK_DISPLAY_MSG_TRACK_DETECT_OK:
+      _previous_screen = _screen;
+      _screen = screen::msg_track_detect_ok;
+      unsigned long _msg_duration = next_task.data/_frame_duration;
+      if (_msg_duration == 0) {
+        _msg_duration == 1;
+      }
+      _hold_till_frame = _frame_ctr + _msg_duration;
+      break;
     
     default:
       break;
@@ -317,6 +344,10 @@ int lcd::loop(unsigned long timeout_ms) {
     
   case screen::msg_gps_fix:
     this->render_msg_gps_fix(); 
+    break;
+    
+  case screen::msg_track_detect_ok:
+    this->render_msg_track_detect_ok();
     break;
   
   default:
