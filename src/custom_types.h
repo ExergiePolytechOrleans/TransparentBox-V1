@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include <inttypes.h>
+#include <string.h>
 
 #define CONFIG_MAGIC 0xBEEF
 struct vehicle_config{
@@ -20,7 +21,7 @@ struct lat_lng {
 struct track_data {
     uint16_t magic = CONFIG_MAGIC;
     int id;
-    char name[32];
+    char name[20];
     lat_lng pt_a;
     lat_lng pt_b;
 };
@@ -40,32 +41,12 @@ struct gps_data {
     uint32_t num_fix;
 };
 
-inline void gps_sub_copy_from_volatile(gps_sub_data& dst, const volatile gps_sub_data& src) {
-    dst.age   = src.age;
-    dst.valid = src.valid;
-    dst.value = src.value;
+template<typename T>
+inline void copy_from_volatile(T& dst, const volatile T& src) {
+    memcpy(&dst, (const void*)&src, sizeof(T));
 }
 
-inline void gps_sub_copy_to_volatile(volatile gps_sub_data& dst, const gps_sub_data& src) {
-    dst.age   = src.age;
-    dst.valid = src.valid;
-    dst.value = src.value;
-}
-
-inline void gps_copy_from_volatile(gps_data& dst, const volatile gps_data& src) {
-    gps_sub_copy_from_volatile(dst.altitude, src.altitude);
-    gps_sub_copy_from_volatile(dst.lat,      src.lat);
-    gps_sub_copy_from_volatile(dst.lng,      src.lng);
-    gps_sub_copy_from_volatile(dst.speed,    src.speed);
-    gps_sub_copy_from_volatile(dst.course,   src.course);
-    dst.num_fix = src.num_fix;
-}
-
-inline void gps_copy_to_volatile(volatile gps_data& dst, const gps_data& src) {
-    gps_sub_copy_to_volatile(dst.altitude, src.altitude);
-    gps_sub_copy_to_volatile(dst.lat,      src.lat);
-    gps_sub_copy_to_volatile(dst.lng,      src.lng);
-    gps_sub_copy_to_volatile(dst.speed,    src.speed);
-    gps_sub_copy_to_volatile(dst.course,   src.course);
-    dst.num_fix = src.num_fix;
+template<typename T>
+inline void copy_to_volatile(volatile T& dst, const T& src) {
+    memcpy((void*)&dst, &src, sizeof(T));
 }

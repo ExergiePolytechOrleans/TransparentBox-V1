@@ -6,9 +6,9 @@
  volatile gps_data gps_data_global = {};
 
  void gps_global_read(gps_data& out) {
-     gps_copy_from_volatile(out, gps_data_global);
+     copy_from_volatile(out, gps_data_global);
  }
 
  void gps_global_write(const gps_data& in) {
-    gps_copy_to_volatile(gps_data_global, in);
+     copy_to_volatile(gps_data_global, in);
  }
