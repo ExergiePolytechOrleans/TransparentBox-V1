@@ -61,6 +61,7 @@ bool lcd::is_message_task(task_type type) {
     case TASK_DISPLAY_MSG_GPS_FIX:
     case TASK_DISPLAY_MSG_TRACK_DETECT_OK:
     case TASK_DISPLAY_MSG_CONFIG_NO_TRACKS:
+    case TASK_DISPLAY_MSG_BAT_LOW:
       return true;
 
     default:
@@ -200,6 +201,15 @@ int lcd::render_msg_config_no_tracks() {
   this->print("CONFIG INFO");
   _display->setCursor(2, 2);
   this->print("NO TRACKS LOADED");
+  return 0;
+}
+
+int lcd::render_msg_battery_low() {
+  this->clear();
+  _display->setCursor(2, 1);
+  this->print("BATTERY WARNING");
+  _display->setCursor(6, 2);
+  this->print("VBAT LOW");
   return 0;
 }
 
@@ -399,6 +409,10 @@ int lcd::loop(unsigned long timeout_ms) {
       case TASK_DISPLAY_MSG_CONFIG_NO_TRACKS:
         activate_message(screen::msg_config_no_tracks, next_task.data);
         break;
+        
+      case TASK_DISPLAY_MSG_BAT_LOW:
+        activate_message(screen::msg_battery_low, next_task.data);
+        break;
 
       default:
         break;
@@ -448,6 +462,10 @@ int lcd::loop(unsigned long timeout_ms) {
 
     case screen::msg_config_no_tracks:
       this->render_msg_config_no_tracks();
+      break;
+      
+    case screen::msg_battery_low:
+      this->render_msg_battery_low();
       break;
 
     default:

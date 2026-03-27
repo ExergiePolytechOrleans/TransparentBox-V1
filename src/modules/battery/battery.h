@@ -16,6 +16,9 @@ private:
   ring_buffer<Task, 16> _queue;
   double _vbat = 0;
   double _cal = 0;
+  double _low = 0;
+  unsigned long _warning_sent = 0;
+  unsigned long _warning_timeout = 10000;
   unsigned long _update_interval = 1000;
   unsigned long _last_read = 0;
   int calibrate(const Task& task);

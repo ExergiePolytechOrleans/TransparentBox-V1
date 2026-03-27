@@ -6,11 +6,11 @@
 #include <Arduino.h>
 #include <avr/wdt.h>
 
+#include "base/module_base.h"
+#include "base/ring_buffer.h"
+#include "base/task.h"
 #include "custom_types.h"
 #include "modules/logger/system_logger.h"
-#include "base/task.h"
-#include "base/ring_buffer.h"
-#include "base/module_base.h"
 
 class cmd : public module_base {
 private:
@@ -27,6 +27,7 @@ private:
     CMD_DISPLAY_DRIVER_PRIMARY,
     CMD_BATTERY_CAL,
     CMD_BATTERY_PRINT_VBAT,
+    CMD_BATTERY_SET_LOW,
   };
 
   HardwareSerial *_data_stream;
@@ -57,6 +58,7 @@ private:
   int handle_display_driver_primary(unsigned short argc);
   int handle_battery_cal(unsigned short argc, char *argv[]);
   int handle_battery_print_vbat(unsigned short argc);
+  int handle_battery_set_low(unsigned short argc, char *argv[]);
   int handle_unknown_command(unsigned short argc, char *argv[]);
 
 public:

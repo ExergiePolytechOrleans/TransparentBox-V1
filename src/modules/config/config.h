@@ -48,6 +48,7 @@ private:
   int delete_track(unsigned short idx);
   int reset_cfg();
   int write_vbat_cal(double val);
+  int write_vbat_low(double val);
 
 public:
   int push(const Task &task) override;

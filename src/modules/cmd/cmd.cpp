@@ -116,6 +116,10 @@ cmd::command_id cmd::parse_command_name(const char *input) {
     return CMD_BATTERY_PRINT_VBAT;
   }
 
+  if (strcmp(input, "BATTERY_SET_LOW") == 0) {
+    return CMD_BATTERY_SET_LOW;
+  }
+
   return CMD_UNKNOWN;
 }
 
@@ -411,6 +415,27 @@ int cmd::handle_battery_print_vbat(unsigned short argc) {
 #endif
 }
 
+int cmd::handle_battery_set_low(unsigned short argc, char* argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("BATTERY_SET_LOW expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+  double low = strtod(argv[1], nullptr);
+  uint32_t task_data;
+  memcpy(&task_data, &low, sizeof(uint32_t));
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Setting warning level for VBAT");
+  }
+#endif
+  router::send(MOD_CFG, TASK_CONFIG_VBAT_SET_LOW, task_data);
+  return 0;
+}
+
 int cmd::handle_unknown_command(unsigned short argc, char *argv[]) {
 #ifdef ERROR
   if (_logger != nullptr) {
@@ -458,6 +483,9 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
       
     case CMD_BATTERY_PRINT_VBAT:
       return this->handle_battery_print_vbat(argc);
+      
+    case CMD_BATTERY_SET_LOW:
+      return this->handle_battery_set_low(argc, argv);
 
     case CMD_UNKNOWN:
     default:

@@ -31,6 +31,7 @@ int battery::init() {
   vehicle_config config;
   config_global_read(config);
   _cal = config.vbat_calibration;
+  _low = config.vbat_low;
 }
 
 int battery::loop(unsigned long timeout_ms) {
@@ -39,6 +40,12 @@ int battery::loop(unsigned long timeout_ms) {
     _vbat = _cal * adc_read;
 
     vbat_global_write(_vbat);
+    if (_vbat < _low) {
+        if (_warning_sent == 0 || millis() > _warning_sent + _warning_timeout) {
+            router::send(MOD_LCD, TASK_DISPLAY_MSG_BAT_LOW, 2000);
+            _warning_sent = millis();
+        }
+    }
   }
   Task active_task;
   int res = _queue.pop(active_task);
@@ -60,6 +67,7 @@ int battery::loop(unsigned long timeout_ms) {
             vehicle_config config; 
             config_global_read(config);
             _cal = config.vbat_calibration;
+            _low = config.vbat_low;
             break;
         }
         

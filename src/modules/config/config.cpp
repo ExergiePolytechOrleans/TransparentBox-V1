@@ -104,6 +104,11 @@ int config::write_vbat_cal(double val) {
   return this->write_cfg();
 }
 
+int config::write_vbat_low(double val) {
+  _config.vbat_low = val;
+  return this->write_cfg();
+}
+
 config::config() : _logger(nullptr), _valid_config(true) {}
 
 config::config(system_logger *logger) : _logger(logger), _valid_config(true) {}
@@ -243,6 +248,13 @@ int config::handle_active_task(unsigned long timeout_ms) {
     double cal_value;
     memcpy(&cal_value, &_active_task.data, sizeof(double));
     int res = this->write_vbat_cal(cal_value);
+    this->task_complete();
+  }
+
+  case TASK_CONFIG_VBAT_SET_LOW: {
+    double low_value;
+    memcpy(&low_value, &_active_task.data, sizeof(double));
+    int res = this->write_vbat_low(low_value);
     this->task_complete();
   }
 
