@@ -42,6 +42,8 @@ private:
   int handle_active_task(unsigned long timeout_ms);
   int task_config_detect_track(unsigned long timeout_ms);
   int task_complete();
+  int write_track(const track_data& in);
+  int write_track_from_temp();
 
 public:
   int push(const Task &task) override;

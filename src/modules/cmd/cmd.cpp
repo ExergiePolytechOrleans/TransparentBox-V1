@@ -5,6 +5,8 @@
 #include "cmd.h"
 
 #include <string.h>
+#include "data/track_store.h"
+#include "base/router.h"
 
 char *cmd::trim_arg(char *input) {
   if (input == nullptr) {
@@ -76,6 +78,10 @@ cmd::command_id cmd::parse_command_name(const char *input) {
     return CMD_DUMPCFG;
   }
 
+  if (strcmp(input, "TRACK_LOAD") == 0) {
+    return CMD_LOAD_TRACK;
+  }
+
   return CMD_UNKNOWN;
 }
 
@@ -98,6 +104,58 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
         _logger->dump_config();
       }
 #endif
+      return 0;
+      
+    case CMD_LOAD_TRACK:
+      if (argc != 7) {
+      #ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error("TRACK_LOAD expects 6 arguments");
+        }
+      #endif
+        return 1;  
+      }
+      track_data new_track;
+
+      new_track.id = strtoul(argv[1], nullptr, 10);
+
+      strncpy(new_track.name, argv[2], sizeof(new_track.name) - 1);
+      new_track.name[sizeof(new_track.name) - 1] = '\0';
+      
+      lat_lng pt_a;
+      pt_a.lat = strtod(argv[3], nullptr);
+      pt_a.lng = strtod(argv[4], nullptr);
+      new_track.pt_a = pt_a;
+
+      lat_lng pt_b;
+      pt_b.lat = strtod(argv[5], nullptr);
+      pt_b.lng = strtod(argv[6], nullptr);
+      new_track.pt_b = pt_b;
+      
+      if (new_track.id < 1 || new_track.id > 8) {
+        #ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error(String("ID out of range: ") + String(new_track.id));
+        }
+        #endif
+        return 1;
+      }
+
+      #ifdef INFO
+      if (_logger != nullptr) {
+        _logger->info("Loading new track");
+        _logger->info(String("ID: ") + String(new_track.id));
+        _logger->info(String("Name: ") + new_track.name);
+        _logger->info(String("Point A lat: ") + String(new_track.pt_a.lat));
+        _logger->info(String("Point A lng: ") + String(new_track.pt_a.lat));
+        _logger->info(String("Point B lat: ") + String(new_track.pt_b.lat));
+        _logger->info(String("Point B lng: ") + String(new_track.pt_b.lat));
+      }
+      #endif
+      
+      track_temp_global_write(new_track);
+      router::send(MOD_CFG, TASK_CONFIG_WRITE_TEMP_TRACK);
+       
       return 0;
 
     case CMD_UNKNOWN:

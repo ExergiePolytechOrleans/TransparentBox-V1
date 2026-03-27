@@ -17,7 +17,8 @@ private:
   enum command_id {
     CMD_UNKNOWN = 0,
     CMD_REBOOT,
-    CMD_DUMPCFG
+    CMD_DUMPCFG,
+    CMD_LOAD_TRACK,
   };
 
   HardwareSerial *_data_stream;

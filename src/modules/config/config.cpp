@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "config.h"
+#include "data/track_store.h"
 
 #include <math.h>
 #include <string.h>
@@ -15,6 +16,34 @@ int config::task_complete() {
   _task_memory_stale = true;
   _active_task = {MOD_NULL, TASK_NULL, 0};
   return 0;
+}
+
+int config::write_track(const track_data& in) {
+  track_data copy = in;
+  copy.magic = CONFIG_MAGIC;
+  if (copy.id < 1 || copy.id > 8) {
+    #ifdef ERROR
+    if (_logger  != nullptr) {
+      _logger->error("Cannot write track data with out of range id, aborting");
+    }
+    #endif
+    return 1;
+  }
+  EEPROM.put(copy.id, copy);
+  _config.track_slot_occupied[copy.id - 1] = true;
+  this->write_cfg();
+  #ifdef INFO
+  if (_logger !=nullptr) {
+    _logger->info("Succesfully wrote new track into slot " + String(copy.id));
+  }
+  #endif
+  return 0; 
+}
+
+int config::write_track_from_temp() {
+    track_data new_track;
+    track_temp_global_read(new_track);
+    return this->write_track(new_track);
 }
 
 config::config() : _logger(nullptr), _valid_config(true) {}
@@ -123,7 +152,10 @@ int config::handle_active_task(unsigned long timeout_ms) {
     if (!_is_track_loaded) {
       return task_config_detect_track(timeout_ms);
     }
-    break;
+    return 0;
+ 
+  case TASK_CONFIG_WRITE_TEMP_TRACK:
+    return this->write_track_from_temp();
 
   default:
     break;

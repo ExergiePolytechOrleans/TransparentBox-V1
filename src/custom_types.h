@@ -20,8 +20,8 @@ struct lat_lng {
 
 struct track_data {
     uint16_t magic = CONFIG_MAGIC;
-    int id;
-    char name[20];
+    unsigned short id;
+    char name[21];
     lat_lng pt_a;
     lat_lng pt_b;
 };
