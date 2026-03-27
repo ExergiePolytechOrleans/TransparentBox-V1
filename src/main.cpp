@@ -58,7 +58,6 @@ void setup() {
   driver_display->print_message("GPS Init Complete");
   delay(1000);
   router::send(MOD_LCD, TASK_DISPLAY_GPS_DEBUG);
-  router::send(MOD_CFG, TASK_CONFIG_TRACK_DETECT);
 }
 
 void loop() {

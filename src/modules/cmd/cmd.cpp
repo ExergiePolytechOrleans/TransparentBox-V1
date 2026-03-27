@@ -92,6 +92,11 @@ cmd::command_id cmd::parse_command_name(const char *input) {
   }
 
   if (strcmp(input, "CFG_RESET") == 0) {
+      #ifdef INFO
+      if (_logger != nullptr) {
+        _logger->info("Resetting config");
+      }
+      #endif
     return CMD_CFG_RESET;
   }
 
@@ -269,6 +274,11 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
 #endif
         return 1;
       }
+      #ifdef INFO
+      if (_logger != nullptr) {
+        _logger->info("Resetting config");
+      }
+      #endif
       return router::send(MOD_CFG, TASK_CONFIG_CFG_RESET);
 
     case CMD_UNKNOWN:
