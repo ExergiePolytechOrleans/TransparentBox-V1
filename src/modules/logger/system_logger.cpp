@@ -54,7 +54,7 @@ int system_logger::dump_config() {
     for (size_t i = 0; i < 8; i++) {
         snprintf(buffer, sizeof(buffer),
             "\tTrack slot %d: %d",
-            i,
+            i + 1,
             temp.track_slot_occupied[i]
         );
         this->info(String(buffer));

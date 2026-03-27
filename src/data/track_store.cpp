@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Association Exergie <association.exergie@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "data/track_store.h"
+#include "data/eeprom_layout.h"
 
  volatile track_data track_data_global = {};
 volatile track_data track_data_temp_global = {};
@@ -15,7 +16,7 @@ volatile track_data track_data_temp_global = {};
         return 1;
      }
      track_data temp;
-     EEPROM.get(idx, temp);
+     EEPROM.get(eeprom_layout::track_slot_addr(idx), temp);
      if (temp.magic != CONFIG_MAGIC) {
         return 1;
      }

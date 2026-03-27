@@ -19,6 +19,9 @@ private:
     CMD_REBOOT,
     CMD_DUMPCFG,
     CMD_PUT_TRACK,
+    CMD_DELETE_TRACK,
+    CMD_DUMP_TRACK,
+    CMD_CFG_RESET,
   };
 
   HardwareSerial *_data_stream;
@@ -36,6 +39,8 @@ private:
   char *trim_arg(char *input);
   command_id parse_command_name(const char *input);
   int dispatch_command(command_id command, unsigned short argc, char *argv[]);
+  int parse_track_slot_id(const char *id_str, unsigned short &id_out);
+  int dump_track_slot(unsigned short id);
 
 public:
   int push(const Task &task) override;

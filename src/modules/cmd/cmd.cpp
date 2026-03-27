@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include "data/track_store.h"
+#include "data/config_store.h"
 #include "base/router.h"
 
 char *cmd::trim_arg(char *input) {
@@ -82,7 +83,64 @@ cmd::command_id cmd::parse_command_name(const char *input) {
     return CMD_PUT_TRACK;
   }
 
+  if (strcmp(input, "TRACK_DELETE") == 0) {
+    return CMD_DELETE_TRACK;
+  }
+
+  if (strcmp(input, "TRACK_DUMP") == 0) {
+    return CMD_DUMP_TRACK;
+  }
+
+  if (strcmp(input, "CFG_RESET") == 0) {
+    return CMD_CFG_RESET;
+  }
+
   return CMD_UNKNOWN;
+}
+
+int cmd::parse_track_slot_id(const char *id_str, unsigned short &id_out) {
+  if (id_str == nullptr || id_str[0] == '\0') {
+    return 1;
+  }
+
+  id_out = strtoul(id_str, nullptr, 10);
+  if (id_out < 1 || id_out > 8) {
+    return 1;
+  }
+
+  return 0;
+}
+
+int cmd::dump_track_slot(unsigned short id) {
+  vehicle_config cfg;
+  config_global_read(cfg);
+  bool occupied = cfg.track_slot_occupied[id - 1];
+
+  track_data track;
+  int res = track_global_read(id, track);
+  if (res != 0) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("Track slot " + String(id) + " has no valid track data");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Track dump for slot " + String(id));
+    _logger->info(String("\tOccupied flag: ") + String(occupied));
+    _logger->info(String("\tID: ") + String(track.id));
+    _logger->info(String("\tName: ") + String(track.name));
+    _logger->info(String("\tPoint A lat: ") + String(track.pt_a.lat, 6));
+    _logger->info(String("\tPoint A lng: ") + String(track.pt_a.lng, 6));
+    _logger->info(String("\tPoint B lat: ") + String(track.pt_b.lat, 6));
+    _logger->info(String("\tPoint B lng: ") + String(track.pt_b.lng, 6));
+  }
+#endif
+
+  return 0;
 }
 
 int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[]) {
@@ -110,14 +168,21 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
       if (argc != 7) {
       #ifdef ERROR
         if (_logger != nullptr) {
-          _logger->error("TRACK_LOAD expects 6 arguments");
+          _logger->error("TRACK_PUT expects 6 arguments");
         }
       #endif
         return 1;  
       }
       track_data new_track;
 
-      new_track.id = strtoul(argv[1], nullptr, 10);
+      if (parse_track_slot_id(argv[1], new_track.id) != 0) {
+      #ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error(String("ID out of range: ") + String(argv[1]));
+        }
+      #endif
+        return 1;
+      }
 
       strncpy(new_track.name, argv[2], sizeof(new_track.name) - 1);
       new_track.name[sizeof(new_track.name) - 1] = '\0';
@@ -132,24 +197,15 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
       pt_b.lng = strtod(argv[6], nullptr);
       new_track.pt_b = pt_b;
       
-      if (new_track.id < 1 || new_track.id > 8) {
-        #ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error(String("ID out of range: ") + String(new_track.id));
-        }
-        #endif
-        return 1;
-      }
-
       #ifdef INFO
       if (_logger != nullptr) {
         _logger->info("Loading new track");
         _logger->info(String("ID: ") + String(new_track.id));
         _logger->info(String("Name: ") + new_track.name);
         _logger->info(String("Point A lat: ") + String(new_track.pt_a.lat));
-        _logger->info(String("Point A lng: ") + String(new_track.pt_a.lat));
+        _logger->info(String("Point A lng: ") + String(new_track.pt_a.lng));
         _logger->info(String("Point B lat: ") + String(new_track.pt_b.lat));
-        _logger->info(String("Point B lng: ") + String(new_track.pt_b.lat));
+        _logger->info(String("Point B lng: ") + String(new_track.pt_b.lng));
       }
       #endif
       
@@ -157,6 +213,63 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
       router::send(MOD_CFG, TASK_CONFIG_WRITE_TEMP_TRACK);
        
       return 0;
+
+    case CMD_DELETE_TRACK: {
+      if (argc != 2) {
+#ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error("TRACK_DELETE expects 1 argument");
+        }
+#endif
+        return 1;
+      }
+
+      unsigned short id;
+      if (parse_track_slot_id(argv[1], id) != 0) {
+#ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error(String("ID out of range: ") + String(argv[1]));
+        }
+#endif
+        return 1;
+      }
+
+      return router::send(MOD_CFG, TASK_CONFIG_TRACK_DELETE, id);
+    }
+
+    case CMD_DUMP_TRACK: {
+      if (argc != 2) {
+#ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error("TRACK_DUMP expects 1 argument");
+        }
+#endif
+        return 1;
+      }
+
+      unsigned short id;
+      if (parse_track_slot_id(argv[1], id) != 0) {
+#ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error(String("ID out of range: ") + String(argv[1]));
+        }
+#endif
+        return 1;
+      }
+
+      return this->dump_track_slot(id);
+    }
+
+    case CMD_CFG_RESET:
+      if (argc != 1) {
+#ifdef ERROR
+        if (_logger != nullptr) {
+          _logger->error("CFG_RESET expects no arguments");
+        }
+#endif
+        return 1;
+      }
+      return router::send(MOD_CFG, TASK_CONFIG_CFG_RESET);
 
     case CMD_UNKNOWN:
     default:

@@ -12,6 +12,7 @@
 #include <EEPROM.h>
 #include "data/gps_store.h"
 #include "data/track_store.h"
+#include "data/eeprom_layout.h"
 #include "base/router.h"
 
 struct task_config_track_detect_data {
@@ -44,6 +45,8 @@ private:
   int task_complete();
   int write_track(const track_data& in);
   int write_track_from_temp();
+  int delete_track(unsigned short idx);
+  int reset_cfg();
 
 public:
   int push(const Task &task) override;

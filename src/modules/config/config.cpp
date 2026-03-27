@@ -29,7 +29,7 @@ int config::write_track(const track_data& in) {
     #endif
     return 1;
   }
-  EEPROM.put(copy.id, copy);
+  EEPROM.put(eeprom_layout::track_slot_addr(copy.id), copy);
   _config.track_slot_occupied[copy.id - 1] = true;
   this->write_cfg();
   #ifdef INFO
@@ -46,6 +46,61 @@ int config::write_track_from_temp() {
     return this->write_track(new_track);
 }
 
+int config::delete_track(unsigned short idx) {
+  if (idx < 1 || idx > 8) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("Cannot delete track with out of range id, aborting");
+    }
+#endif
+    return 1;
+  }
+
+  if (_config.track_slot_occupied[idx - 1] == false) {
+#ifdef WARN
+    if (_logger != nullptr) {
+      _logger->warn("Requested delete on empty track slot " + String(idx));
+    }
+#endif
+    return 0;
+  }
+
+  _config.track_slot_occupied[idx - 1] = false;
+
+  if (_is_track_loaded && _loaded_track.id == idx) {
+    _is_track_loaded = false;
+    _loaded_track = {};
+    track_global_write(_loaded_track);
+  }
+
+  int write_res = this->write_cfg();
+
+#ifdef INFO
+  if (_logger != nullptr && write_res == 0) {
+    _logger->info("Succesfully deleted track slot " + String(idx));
+  }
+#endif
+  return write_res;
+}
+
+int config::reset_cfg() {
+  vehicle_config clean_config;
+  _config = clean_config;
+  _is_track_loaded = false;
+  _loaded_track = {};
+  _task_memory_stale = true;
+  _no_tracks_notice_shown = false;
+  track_global_write(_loaded_track);
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Resetting configuration to factory defaults");
+  }
+#endif
+
+  return this->write_cfg();
+}
+
 config::config() : _logger(nullptr), _valid_config(true) {}
 
 config::config(system_logger *logger) : _logger(logger), _valid_config(true) {}
@@ -53,13 +108,13 @@ config::config(system_logger *logger) : _logger(logger), _valid_config(true) {}
 config::~config() {}
 
 int config::read_cfg() {
-  EEPROM.get(0, _config);
+  EEPROM.get(eeprom_layout::config_addr, _config);
   config_global_write(_config);
   return 0;
 }
 
 int config::write_cfg() {
-  EEPROM.put(0, _config);
+  EEPROM.put(eeprom_layout::config_addr, _config);
   config_global_write(_config);
   #ifdef INFO
   if (_logger != nullptr) {
@@ -70,7 +125,8 @@ int config::write_cfg() {
 }
 
 int config::write_cfg(const vehicle_config &new_config) {
-  EEPROM.put(0, new_config);
+  _config = new_config;
+  EEPROM.put(eeprom_layout::config_addr, new_config);
   config_global_write(new_config);
   return 0;
 }
@@ -153,16 +209,32 @@ int config::task_config_detect_track(unsigned long timeout_ms) {
 
 int config::handle_active_task(unsigned long timeout_ms) {
   switch (_active_task.type) {
-  case TASK_CONFIG_TRACK_DETECT:
+  case TASK_CONFIG_TRACK_DETECT: {
     if (!_is_track_loaded) {
       return task_config_detect_track(timeout_ms);
     }
+    this->task_complete();
     return 0;
- 
-  case TASK_CONFIG_WRITE_TEMP_TRACK:
+
+  }
+
+  case TASK_CONFIG_WRITE_TEMP_TRACK: {
     int res = this->write_track_from_temp();
     this->task_complete();
     return res;
+  }
+
+  case TASK_CONFIG_TRACK_DELETE: {
+    int res = this->delete_track(_active_task.data);
+    this->task_complete();
+    return res;
+  }
+
+  case TASK_CONFIG_CFG_RESET: {
+    int res = this->reset_cfg();
+    this->task_complete();
+    return res;
+  }
 
   default:
     break;
@@ -217,7 +289,7 @@ int config::get_track(unsigned int idx, track_data &t) {
     return 1;
   }
 
-  EEPROM.get(idx, t);
+  EEPROM.get(eeprom_layout::track_slot_addr(idx), t);
   if (t.magic != CONFIG_MAGIC) {
     return 1;
   }
@@ -235,7 +307,7 @@ int config::load_track(unsigned int idx) {
   }
 
   track_data temp;
-  EEPROM.get(idx, temp);
+  EEPROM.get(eeprom_layout::track_slot_addr(idx), temp);
   if (temp.magic != CONFIG_MAGIC) {
     return 1;
   }
