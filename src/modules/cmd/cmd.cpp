@@ -95,6 +95,18 @@ cmd::command_id cmd::parse_command_name(const char *input) {
     return CMD_CFG_RESET;
   }
 
+  if (strcmp(input, "TRACK_AUTODETECT") == 0) {
+    return CMD_TRACK_AUTODETECT;
+  }
+
+  if (strcmp(input, "DISPLAY_GPS_DEBUG") == 0) {
+    return CMD_DISPLAY_GPS_DEBUG;
+  }
+
+  if (strcmp(input, "DISPLAY_DRIVER_PRIMARY") == 0) {
+    return CMD_DISPLAY_DRIVER_PRIMARY;
+  }
+
   return CMD_UNKNOWN;
 }
 
@@ -296,6 +308,60 @@ int cmd::handle_cfg_reset_command(unsigned short argc) {
   return router::send(MOD_CFG, TASK_CONFIG_CFG_RESET);
 }
 
+int cmd::handle_track_autodetect_command(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("TRACK_AUTODETECT expects no arguments");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Detecting track");
+  }
+#endif
+  return router::send(MOD_CFG, TASK_CONFIG_TRACK_DETECT, 1);
+}
+
+int cmd::handle_display_gps_debug(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("DISPLAY_GPS_DEBUG expects no arguments");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Switching to GPS_DEBUG display");
+  }
+#endif
+  return router::send(MOD_LCD, TASK_DISPLAY_GPS_DEBUG);
+}
+
+int cmd::handle_display_driver_primary(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("DISPLAY_DRIVER_PRIMARY expects no arguments");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Switching to DRIVER_PRIMARY display");
+  }
+#endif
+  return router::send(MOD_LCD, TASK_DISPLAY_DRIVER_PRIMARY);
+}
+
 int cmd::handle_unknown_command(unsigned short argc, char *argv[]) {
 #ifdef ERROR
   if (_logger != nullptr) {
@@ -328,6 +394,15 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
 
     case CMD_CFG_RESET:
       return this->handle_cfg_reset_command(argc);
+      
+    case CMD_TRACK_AUTODETECT:
+      return this->handle_track_autodetect_command(argc);
+      
+    case CMD_DISPLAY_GPS_DEBUG:
+      return this->handle_display_gps_debug(argc);
+      
+    case CMD_DISPLAY_DRIVER_PRIMARY:
+      return this->handle_display_driver_primary(argc);
 
     case CMD_UNKNOWN:
     default:

@@ -210,7 +210,7 @@ int config::task_config_detect_track(unsigned long timeout_ms) {
 int config::handle_active_task(unsigned long timeout_ms) {
   switch (_active_task.type) {
   case TASK_CONFIG_TRACK_DETECT: {
-    if (!_is_track_loaded) {
+    if (!_is_track_loaded || _active_task.data == 1) {
       return task_config_detect_track(timeout_ms);
     }
     this->task_complete();

@@ -20,6 +20,7 @@ namespace screen {
 typedef enum lcd_screen {
   blank,
   gps_debug,
+  driver_primary,
   msg_gps_fix,
   msg_track_detect_ok,
   msg_config_no_tracks,
@@ -60,6 +61,7 @@ private:
   screen::lcd_screen get_active_screen() const;
 
   int render_gps_debug();
+  int render_driver_primary();
   int render_msg_gps_fix();
   int render_msg_track_detect_ok();
   int render_msg_config_no_tracks();

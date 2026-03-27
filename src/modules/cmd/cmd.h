@@ -22,6 +22,9 @@ private:
     CMD_DUMP_TRACK,
     CMD_CFG_RESET,
     CMD_CFG_DUMP,
+    CMD_TRACK_AUTODETECT,
+    CMD_DISPLAY_GPS_DEBUG,
+    CMD_DISPLAY_DRIVER_PRIMARY,
   };
 
   HardwareSerial *_data_stream;
@@ -47,6 +50,9 @@ private:
   int handle_track_delete_command(unsigned short argc, char *argv[]);
   int handle_track_dump_command(unsigned short argc, char *argv[]);
   int handle_cfg_reset_command(unsigned short argc);
+  int handle_track_autodetect_command(unsigned short argc);
+  int handle_display_gps_debug(unsigned short argc);
+  int handle_display_driver_primary(unsigned short argc);
   int handle_unknown_command(unsigned short argc, char *argv[]);
 
 public:

@@ -142,6 +142,23 @@ int lcd::render_gps_debug() {
   return 0;
 }
 
+int lcd::render_driver_primary() {
+  this->clear();
+  
+  gps_data gps;
+  gps_global_read(gps);
+  
+  _display->setCursor(0,0);
+  this->print("GPS:");
+  if (gps.num_fix != 0) {
+    this->print("V");
+  } else {
+    this->print("X");
+  }
+  
+  return 0;
+}
+
 int lcd::render_msg_gps_fix() {
   this->clear();
   _display->setCursor(6, 1);
@@ -352,6 +369,14 @@ int lcd::loop(unsigned long timeout_ms) {
         }
         break;
 
+      case TASK_DISPLAY_DRIVER_PRIMARY:
+        _data_screen = screen::driver_primary;
+        if (!_msg_active) {
+          _screen = _data_screen;
+          _force_render = true;
+        }
+        break;
+
       case TASK_DISPLAY_MSG_GPS_FIX:
         activate_message(screen::msg_gps_fix, next_task.data);
         break;
@@ -396,6 +421,10 @@ int lcd::loop(unsigned long timeout_ms) {
 
     case screen::gps_debug:
       this->render_gps_debug();
+      break;
+      
+    case screen::driver_primary:
+      this->render_driver_primary();
       break;
 
     case screen::msg_gps_fix:
