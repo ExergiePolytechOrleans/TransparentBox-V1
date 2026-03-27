@@ -14,6 +14,7 @@
 #include "base/module_base.h"
 #include "data/gps_store.h"
 #include "data/track_store.h"
+#include "data/general_store.h"
 
 namespace screen {
 

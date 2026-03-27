@@ -148,6 +148,9 @@ int lcd::render_driver_primary() {
   gps_data gps;
   gps_global_read(gps);
   
+  double vbat;
+  vbat_global_read(vbat);
+
   _display->setCursor(0,0);
   this->print("GPS:");
   if (gps.num_fix != 0) {
@@ -155,6 +158,14 @@ int lcd::render_driver_primary() {
   } else {
     this->print("X");
   }
+  
+  _display->setCursor(3,2);
+  this->print("SPEED: ");
+  this->print(gps.speed.value);
+  
+  _display->setCursor(0,3);
+  this->print("VBAT:");
+  this->print(vbat);
   
   return 0;
 }

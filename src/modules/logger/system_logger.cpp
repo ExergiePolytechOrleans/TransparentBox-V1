@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "system_logger.h"
+#include "data/general_store.h"
 
 #include <stdio.h>
 
@@ -49,6 +50,9 @@ int system_logger::dump_config() {
         temp.track_fallback
     );
     this->info(String(buffer));
+    
+    
+    this->info("\tVBAT cal factor: " + String(temp.vbat_calibration, 6));
 
     // Track slots (one per line)
     for (size_t i = 0; i < 8; i++) {
@@ -59,6 +63,8 @@ int system_logger::dump_config() {
         );
         this->info(String(buffer));
     }
+    
+    
 
     return 0;
 }
