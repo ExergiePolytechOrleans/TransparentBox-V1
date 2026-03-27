@@ -7,16 +7,20 @@
 namespace router {
 int send(const Task &task) {
   if (task.target == MOD_ALL) {
+    int ret = 0;
     for (size_t i = 0; i < MOD_COUNT; i++) {
 
       module_base *mod = modules[i];
 
       if (mod == nullptr) {
-          continue;
+        continue;
       }
 
-      return mod->push(task);
+      if (mod->push(task) != 0) {
+        ret = 1;
+      }
     }
+    return ret;
   }
   if (task.target >= MOD_COUNT) {
     return 1;
