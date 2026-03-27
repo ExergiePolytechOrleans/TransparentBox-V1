@@ -26,3 +26,11 @@ volatile track_data track_data_temp_global = {};
  void track_global_write(const track_data& in) {
      copy_to_volatile(track_data_global, in);
  }
+
+ void track_temp_global_read(track_data& out) {
+     copy_from_volatile(out, track_data_temp_global);
+ }
+
+ void track_temp_global_write(const track_data& in) {
+     copy_to_volatile(track_data_temp_global, in);
+ }
