@@ -120,6 +120,14 @@ cmd::command_id cmd::parse_command_name(const char *input) {
     return CMD_BATTERY_SET_LOW;
   }
 
+  if (strcmp(input, "THERMO_SET_LOW") == 0) {
+    return CMD_THERMO_SET_LOW;
+  }
+
+  if (strcmp(input, "THERMO_SET_HIGH") == 0) {
+    return CMD_THERMO_SET_HIGH;
+  }
+
   return CMD_UNKNOWN;
 }
 
@@ -436,6 +444,48 @@ int cmd::handle_battery_set_low(unsigned short argc, char* argv[]) {
   return 0;
 }
 
+int cmd::handle_thermo_set_low(unsigned short argc, char* argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("THERMO_SET_LOW expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+  double low = strtod(argv[1], nullptr);
+  uint32_t task_data;
+  memcpy(&task_data, &low, sizeof(uint32_t));
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Setting low level for TENG");
+  }
+#endif
+  router::send(MOD_CFG, TASK_CONFIG_TENG_SET_LOW, task_data);
+  return 0;
+}
+
+int cmd::handle_thermo_set_high(unsigned short argc, char* argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("THERMO_SET_HIGH expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+  double low = strtod(argv[1], nullptr);
+  uint32_t task_data;
+  memcpy(&task_data, &low, sizeof(uint32_t));
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Setting high level for TENG");
+  }
+#endif
+  router::send(MOD_CFG, TASK_CONFIG_TENG_SET_LOW, task_data);
+  return 0;
+}
+
 int cmd::handle_unknown_command(unsigned short argc, char *argv[]) {
 #ifdef ERROR
   if (_logger != nullptr) {
@@ -486,6 +536,12 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
       
     case CMD_BATTERY_SET_LOW:
       return this->handle_battery_set_low(argc, argv);
+
+    case CMD_THERMO_SET_LOW:
+      return this->handle_thermo_set_low(argc, argv);
+
+    case CMD_THERMO_SET_HIGH:
+      return this->handle_thermo_set_high(argc, argv);
 
     case CMD_UNKNOWN:
     default:

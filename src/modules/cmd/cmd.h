@@ -28,6 +28,8 @@ private:
     CMD_BATTERY_CAL,
     CMD_BATTERY_PRINT_VBAT,
     CMD_BATTERY_SET_LOW,
+    CMD_THERMO_SET_LOW,
+    CMD_THERMO_SET_HIGH,
   };
 
   HardwareSerial *_data_stream;
@@ -59,6 +61,8 @@ private:
   int handle_battery_cal(unsigned short argc, char *argv[]);
   int handle_battery_print_vbat(unsigned short argc);
   int handle_battery_set_low(unsigned short argc, char *argv[]);
+  int handle_thermo_set_low(unsigned short argc, char *argv[]);
+  int handle_thermo_set_high(unsigned short argc, char *argv[]);
   int handle_unknown_command(unsigned short argc, char *argv[]);
 
 public:

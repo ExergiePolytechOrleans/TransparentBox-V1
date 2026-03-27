@@ -13,6 +13,8 @@ struct vehicle_config{
     bool track_slot_occupied[8] = {false};
     double vbat_calibration = 0;
     double vbat_low = 0;
+    double teng_low = 0;
+    double teng_high = 0;
 };
 
 struct lat_lng {

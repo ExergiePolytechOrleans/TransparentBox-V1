@@ -53,6 +53,9 @@ int system_logger::dump_config() {
     
     
     this->info("\tVBAT cal factor: " + String(temp.vbat_calibration, 6));
+    this->info("\tVBAT low: " + String(temp.vbat_low, 2));
+    this->info("\tTENG low: " + String(temp.teng_low, 2));
+    this->info("\tTENG high: " + String(temp.teng_high, 2));
 
     // Track slots (one per line)
     for (size_t i = 0; i < 8; i++) {
