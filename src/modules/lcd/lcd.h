@@ -32,12 +32,16 @@ private:
   bool _dispaly_cleared;
   system_logger *_logger = nullptr;
   screen::lcd_screen _screen;
-  screen::lcd_screen _previous_screen;
+  screen::lcd_screen _data_screen;
+  screen::lcd_screen _msg_screen;
   unsigned long _last_render;
   unsigned long _frame_duration;
-  long _hold_till_frame = -1;
+  unsigned long _msg_end = 0;
+  bool _msg_active = false;
+  bool _force_render = false;
   ring_buffer<Task, 16> _queue;
-  uint32_t _frame_ctr = 0;
+  Task _deferred_task{};
+  bool _deferred_task_valid = false;
 
   void clear();
   void print(const String &msg);
@@ -48,6 +52,11 @@ private:
   void print(long l, int base = 10);
   void print(unsigned int i, int base = 10);
   void print(int i, int base = 10);
+
+  bool is_message_task(task_type type);
+  void activate_message(screen::lcd_screen msg_screen, unsigned long duration_ms);
+  void expire_message_if_needed(unsigned long now);
+  screen::lcd_screen get_active_screen() const;
 
   int render_gps_debug();
   int render_msg_gps_fix();

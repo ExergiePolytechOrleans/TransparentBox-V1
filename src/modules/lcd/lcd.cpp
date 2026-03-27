@@ -56,6 +56,50 @@ void lcd::print(int i, int base) {
   _dispaly_cleared = false;
 }
 
+bool lcd::is_message_task(task_type type) {
+  switch (type) {
+    case TASK_DISPLAY_MSG_GPS_FIX:
+    case TASK_DISPLAY_MSG_TRACK_DETECT_OK:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+void lcd::activate_message(screen::lcd_screen msg_screen, unsigned long duration_ms) {
+  if (duration_ms == 0) {
+    duration_ms = _frame_duration;
+  }
+
+  _msg_screen = msg_screen;
+  _msg_active = true;
+  _msg_end = millis() + duration_ms;
+  _screen = _msg_screen;
+  _force_render = true;
+}
+
+void lcd::expire_message_if_needed(unsigned long now) {
+  if (!_msg_active) {
+    return;
+  }
+
+  if ((long)(now - _msg_end) >= 0) {
+    _msg_active = false;
+    _msg_screen = screen::blank;
+    _screen = _data_screen;
+    _force_render = true;
+  }
+}
+
+screen::lcd_screen lcd::get_active_screen() const {
+  if (_msg_active) {
+    return _msg_screen;
+  }
+
+  return _data_screen;
+}
+
 int lcd::render_gps_debug() {
   this->clear();
 
@@ -128,7 +172,8 @@ int lcd::push(const Task &task) {
 lcd::lcd()
     : _logger(nullptr),
       _screen(screen::blank),
-      _previous_screen(screen::blank),
+      _data_screen(screen::blank),
+      _msg_screen(screen::blank),
       _last_render(0),
       _frame_duration(2000),
       _dispaly_cleared(false) {
@@ -138,7 +183,8 @@ lcd::lcd()
 lcd::lcd(system_logger *logger)
     : _logger(logger),
       _screen(screen::blank),
-      _previous_screen(screen::blank),
+      _data_screen(screen::blank),
+      _msg_screen(screen::blank),
       _last_render(0),
       _frame_duration(2000),
       _dispaly_cleared(false) {
@@ -162,6 +208,7 @@ int lcd::init() {
   _display->backlight();
   this->clear();
   _display->setCursor(0, 0);
+  _force_render = true;
 
 #ifdef DEEP_DEBUG
   if (_logger != nullptr) {
@@ -258,62 +305,74 @@ int lcd::print_message(String message) {
 
 int lcd::loop(unsigned long timeout_ms) {
   unsigned long now = millis();
-  unsigned long task_timeout = now + timeout_ms;
+  unsigned long start = now;
 
-  while (_queue.size() > 0) {
+  expire_message_if_needed(now);
+
+  while (true) {
     Task next_task;
-    int res = _queue.pop(next_task);
-    if (res != 0) {
-      if (millis() > task_timeout) {
-        break;
+    bool have_task = false;
+
+    if (_deferred_task_valid) {
+      next_task = _deferred_task;
+      _deferred_task_valid = false;
+      have_task = true;
+    } else {
+      if (_queue.pop(next_task) == 0) {
+        have_task = true;
       }
-      continue;
+    }
+
+    if (!have_task) {
+      break;
+    }
+
+    if (_msg_active && is_message_task(next_task.type)) {
+      _deferred_task = next_task;
+      _deferred_task_valid = true;
+      break;
     }
 
     switch (next_task.type) {
       case TASK_DISPLAY_GPS_DEBUG:
-        _previous_screen = _screen;
-        _screen = screen::gps_debug;
+        _data_screen = screen::gps_debug;
+        if (!_msg_active) {
+          _screen = _data_screen;
+          _force_render = true;
+        }
         break;
 
-      case TASK_DISPLAY_MSG_GPS_FIX: {
-        _previous_screen = _screen;
-        _screen = screen::msg_gps_fix;
-        unsigned long _msg_duration = next_task.data / _frame_duration;
-        if (_msg_duration == 0) {
-          _msg_duration = 1;
-        }
-        _hold_till_frame = _frame_ctr + _msg_duration;
+      case TASK_DISPLAY_MSG_GPS_FIX:
+        activate_message(screen::msg_gps_fix, next_task.data);
         break;
-      }
 
-      case TASK_DISPLAY_MSG_TRACK_DETECT_OK: {
-        _previous_screen = _screen;
-        _screen = screen::msg_track_detect_ok;
-        unsigned long _msg_duration = next_task.data / _frame_duration;
-        if (_msg_duration == 0) {
-          _msg_duration = 1;
-        }
-        _hold_till_frame = _frame_ctr + _msg_duration;
+      case TASK_DISPLAY_MSG_TRACK_DETECT_OK:
+        activate_message(screen::msg_track_detect_ok, next_task.data);
         break;
-      }
 
       default:
         break;
     }
 
-    if (millis() > task_timeout) {
+    now = millis();
+    expire_message_if_needed(now);
+
+    if ((unsigned long)(now - start) >= timeout_ms) {
       break;
     }
   }
 
-  if (now < _last_render + _frame_duration) {
-    return 1;
+  now = millis();
+  expire_message_if_needed(now);
+
+  screen::lcd_screen active_screen = get_active_screen();
+  if (_screen != active_screen) {
+    _screen = active_screen;
+    _force_render = true;
   }
 
-  if (_hold_till_frame >= 0 && _frame_ctr >= (uint32_t)_hold_till_frame) {
-    _screen = _previous_screen;
-    _hold_till_frame = -1;
+  if (!_force_render && (unsigned long)(now - _last_render) < _frame_duration) {
+    return 1;
   }
 
   switch (_screen) {
@@ -337,8 +396,8 @@ int lcd::loop(unsigned long timeout_ms) {
       break;
   }
 
-  _last_render = millis();
-  _frame_ctr++;
+  _last_render = now;
+  _force_render = false;
   return 1;
 }
 
