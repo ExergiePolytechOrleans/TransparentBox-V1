@@ -25,6 +25,8 @@ private:
     CMD_TRACK_AUTODETECT,
     CMD_DISPLAY_GPS_DEBUG,
     CMD_DISPLAY_DRIVER_PRIMARY,
+    CMD_BATTERY_CAL,
+    CMD_BATTERY_PRINT_VBAT,
   };
 
   HardwareSerial *_data_stream;
@@ -53,6 +55,8 @@ private:
   int handle_track_autodetect_command(unsigned short argc);
   int handle_display_gps_debug(unsigned short argc);
   int handle_display_driver_primary(unsigned short argc);
+  int handle_battery_cal(unsigned short argc, char *argv[]);
+  int handle_battery_print_vbat(unsigned short argc);
   int handle_unknown_command(unsigned short argc, char *argv[]);
 
 public:

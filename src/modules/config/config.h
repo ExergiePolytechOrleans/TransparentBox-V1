@@ -47,6 +47,7 @@ private:
   int write_track_from_temp();
   int delete_track(unsigned short idx);
   int reset_cfg();
+  int write_vbat_cal(double val);
 
 public:
   int push(const Task &task) override;

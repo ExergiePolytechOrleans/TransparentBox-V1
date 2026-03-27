@@ -11,6 +11,7 @@ struct vehicle_config{
     bool auto_detect_track = true;
     uint8_t track_fallback = 0;
     bool track_slot_occupied[8] = {false};
+    double vbat_calibration = 0;
 };
 
 struct lat_lng {

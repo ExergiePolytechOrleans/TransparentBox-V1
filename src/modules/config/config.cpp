@@ -8,9 +8,7 @@
 #include <math.h>
 #include <string.h>
 
-int config::push(const Task &task) {
-  return _queue.push(task);
-}
+int config::push(const Task &task) { return _queue.push(task); }
 
 int config::task_complete() {
   _task_memory_stale = true;
@@ -18,32 +16,32 @@ int config::task_complete() {
   return 0;
 }
 
-int config::write_track(const track_data& in) {
+int config::write_track(const track_data &in) {
   track_data copy = in;
   copy.magic = CONFIG_MAGIC;
   if (copy.id < 1 || copy.id > 8) {
-    #ifdef ERROR
-    if (_logger  != nullptr) {
+#ifdef ERROR
+    if (_logger != nullptr) {
       _logger->error("Cannot write track data with out of range id, aborting");
     }
-    #endif
+#endif
     return 1;
   }
   EEPROM.put(eeprom_layout::track_slot_addr(copy.id), copy);
   _config.track_slot_occupied[copy.id - 1] = true;
   this->write_cfg();
-  #ifdef INFO
-  if (_logger !=nullptr) {
+#ifdef INFO
+  if (_logger != nullptr) {
     _logger->info("Succesfully wrote new track into slot " + String(copy.id));
   }
-  #endif
-  return 0; 
+#endif
+  return 0;
 }
 
 int config::write_track_from_temp() {
-    track_data new_track;
-    track_temp_global_read(new_track);
-    return this->write_track(new_track);
+  track_data new_track;
+  track_temp_global_read(new_track);
+  return this->write_track(new_track);
 }
 
 int config::delete_track(unsigned short idx) {
@@ -101,6 +99,11 @@ int config::reset_cfg() {
   return this->write_cfg();
 }
 
+int config::write_vbat_cal(double val) {
+  _config.vbat_calibration = val;
+  return this->write_cfg();
+}
+
 config::config() : _logger(nullptr), _valid_config(true) {}
 
 config::config(system_logger *logger) : _logger(logger), _valid_config(true) {}
@@ -116,11 +119,12 @@ int config::read_cfg() {
 int config::write_cfg() {
   EEPROM.put(eeprom_layout::config_addr, _config);
   config_global_write(_config);
-  #ifdef INFO
+#ifdef INFO
   if (_logger != nullptr) {
     _logger->info("Config updated and saved to EEPROM");
   }
-  #endif
+#endif
+  router::send(MOD_ALL, TASK_ALL_CONFIG_UPDATED);
   return 0;
 }
 
@@ -215,7 +219,6 @@ int config::handle_active_task(unsigned long timeout_ms) {
     }
     this->task_complete();
     return 0;
-
   }
 
   case TASK_CONFIG_WRITE_TEMP_TRACK: {
@@ -234,6 +237,13 @@ int config::handle_active_task(unsigned long timeout_ms) {
     int res = this->reset_cfg();
     this->task_complete();
     return res;
+  }
+
+  case TASK_CONFIG_VBAT_CAL_SET: {
+    double cal_value;
+    memcpy(&cal_value, &_active_task.data, sizeof(double));
+    int res = this->write_vbat_cal(cal_value);
+    this->task_complete();
   }
 
   default:

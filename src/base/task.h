@@ -10,8 +10,10 @@ enum module_id : uint8_t {
     MOD_CFG,
     MOD_GPS,
     MOD_LCD,
+    MOD_BAT,
     MOD_COUNT,
-    MOD_NULL
+    MOD_NULL,
+    MOD_ALL,
 };
 
 enum task_type : uint8_t {
@@ -25,6 +27,9 @@ enum task_type : uint8_t {
     TASK_CONFIG_WRITE_TEMP_TRACK,
     TASK_CONFIG_TRACK_DELETE,
     TASK_CONFIG_CFG_RESET,
+    TASK_CONFIG_VBAT_CAL_SET,
+    TASK_BATTERY_CAL,
+    TASK_ALL_CONFIG_UPDATED,
 };
 
 struct Task {

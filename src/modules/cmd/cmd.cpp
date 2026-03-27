@@ -7,6 +7,7 @@
 #include <string.h>
 #include "data/track_store.h"
 #include "data/config_store.h"
+#include "data/general_store.h"
 #include "base/router.h"
 
 char *cmd::trim_arg(char *input) {
@@ -105,6 +106,14 @@ cmd::command_id cmd::parse_command_name(const char *input) {
 
   if (strcmp(input, "DISPLAY_DRIVER_PRIMARY") == 0) {
     return CMD_DISPLAY_DRIVER_PRIMARY;
+  }
+
+  if (strcmp(input, "BATTERY_CAL") == 0) {
+    return CMD_BATTERY_CAL;
+  }
+
+  if (strcmp(input, "BATTERY_PRINT_VBAT") == 0) {
+    return CMD_BATTERY_PRINT_VBAT;
   }
 
   return CMD_UNKNOWN;
@@ -362,6 +371,46 @@ int cmd::handle_display_driver_primary(unsigned short argc) {
   return router::send(MOD_LCD, TASK_DISPLAY_DRIVER_PRIMARY);
 }
 
+int cmd::handle_battery_cal(unsigned short argc, char *argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("BATTERY_CAL expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+  double vbat = strtod(argv[1], nullptr);
+  uint32_t task_data;
+  memcpy(&task_data, &vbat, sizeof(uint32_t));
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Calibrating VBAT");
+  }
+#endif
+  router::send(MOD_BAT, TASK_BATTERY_CAL, task_data);
+  return 0;
+}
+
+int cmd::handle_battery_print_vbat(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("BATTERY_PRINT_VBAT expects no arguments");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  double vbat;
+  vbat_global_read(vbat);
+  if (_logger != nullptr) {
+    _logger->info("VBAT: " + String(vbat));
+  }
+#endif
+}
+
 int cmd::handle_unknown_command(unsigned short argc, char *argv[]) {
 #ifdef ERROR
   if (_logger != nullptr) {
@@ -403,6 +452,12 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
       
     case CMD_DISPLAY_DRIVER_PRIMARY:
       return this->handle_display_driver_primary(argc);
+      
+    case CMD_BATTERY_CAL:
+      return this->handle_battery_cal(argc, argv);
+      
+    case CMD_BATTERY_PRINT_VBAT:
+      return this->handle_battery_print_vbat(argc);
 
     case CMD_UNKNOWN:
     default:

@@ -13,6 +13,7 @@
 #include "base/modules.h"
 #include "base/module_base.h"
 #include "base/router.h"
+#include "modules/battery/battery.h"
 
 
 
@@ -22,6 +23,7 @@ lcd *driver_display = new lcd(logger_output);
 gps *gps_module = new gps(&Serial2, logger_output);
 config *system_config = new config(logger_output);
 cmd *command_handler = new cmd(&Serial, logger_output);
+battery *battery_handler = new battery(logger_output);
 
 
 void setup() {
@@ -31,6 +33,7 @@ void setup() {
   modules[MOD_GPS] = gps_module;
   modules[MOD_CFG] = system_config;
   modules[MOD_CMD] = command_handler;
+  modules[MOD_BAT] = battery_handler;
 
   driver_display->init();
   driver_display->print_message("Starting Initialization");
@@ -57,6 +60,12 @@ void setup() {
   delay(1000);
   driver_display->print_message("GPS Init Complete");
   delay(1000);
+
+  driver_display->print_message("Bat Init...");
+  battery_handler->init();
+  delay(1000);
+  driver_display->print_message("Bat Init Complete");
+  delay(1000);
   router::send(MOD_LCD, TASK_DISPLAY_DRIVER_PRIMARY);
 }
 
@@ -65,4 +74,5 @@ void loop() {
   driver_display->loop();
   command_handler->parse_task();
   system_config->loop();
+  battery_handler->loop();
 }
