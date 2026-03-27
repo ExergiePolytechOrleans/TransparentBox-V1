@@ -41,6 +41,13 @@ private:
   int dispatch_command(command_id command, unsigned short argc, char *argv[]);
   int parse_track_slot_id(const char *id_str, unsigned short &id_out);
   int dump_track_slot(unsigned short id);
+  int handle_reboot_command(unsigned short argc);
+  int handle_dumpcfg_command(unsigned short argc);
+  int handle_track_put_command(unsigned short argc, char *argv[]);
+  int handle_track_delete_command(unsigned short argc, char *argv[]);
+  int handle_track_dump_command(unsigned short argc, char *argv[]);
+  int handle_cfg_reset_command(unsigned short argc);
+  int handle_unknown_command(unsigned short argc, char *argv[]);
 
 public:
   int push(const Task &task) override;

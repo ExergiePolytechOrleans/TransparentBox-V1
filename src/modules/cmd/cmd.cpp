@@ -92,11 +92,6 @@ cmd::command_id cmd::parse_command_name(const char *input) {
   }
 
   if (strcmp(input, "CFG_RESET") == 0) {
-      #ifdef INFO
-      if (_logger != nullptr) {
-        _logger->info("Resetting config");
-      }
-      #endif
     return CMD_CFG_RESET;
   }
 
@@ -148,151 +143,195 @@ int cmd::dump_track_slot(unsigned short id) {
   return 0;
 }
 
+int cmd::handle_reboot_command(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("REBOOT expects no arguments");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Rebooting");
+  }
+#endif
+  delay(200);
+  wdt_enable(WDTO_15MS);
+  while (true) {
+  }
+  return 0;
+}
+
+int cmd::handle_dumpcfg_command(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("DUMPCFG expects no arguments");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->dump_config();
+  }
+#endif
+  return 0;
+}
+
+int cmd::handle_track_put_command(unsigned short argc, char *argv[]) {
+  if (argc != 7) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("TRACK_PUT expects 6 arguments");
+    }
+#endif
+    return 1;
+  }
+
+  track_data new_track;
+  if (parse_track_slot_id(argv[1], new_track.id) != 0) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error(String("ID out of range: ") + String(argv[1]));
+    }
+#endif
+    return 1;
+  }
+
+  strncpy(new_track.name, argv[2], sizeof(new_track.name) - 1);
+  new_track.name[sizeof(new_track.name) - 1] = '\0';
+
+  lat_lng pt_a;
+  pt_a.lat = strtod(argv[3], nullptr);
+  pt_a.lng = strtod(argv[4], nullptr);
+  new_track.pt_a = pt_a;
+
+  lat_lng pt_b;
+  pt_b.lat = strtod(argv[5], nullptr);
+  pt_b.lng = strtod(argv[6], nullptr);
+  new_track.pt_b = pt_b;
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Loading new track");
+    _logger->info(String("ID: ") + String(new_track.id));
+    _logger->info(String("Name: ") + new_track.name);
+    _logger->info(String("Point A lat: ") + String(new_track.pt_a.lat));
+    _logger->info(String("Point A lng: ") + String(new_track.pt_a.lng));
+    _logger->info(String("Point B lat: ") + String(new_track.pt_b.lat));
+    _logger->info(String("Point B lng: ") + String(new_track.pt_b.lng));
+  }
+#endif
+
+  track_temp_global_write(new_track);
+  return router::send(MOD_CFG, TASK_CONFIG_WRITE_TEMP_TRACK);
+}
+
+int cmd::handle_track_delete_command(unsigned short argc, char *argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("TRACK_DELETE expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+
+  unsigned short id;
+  if (parse_track_slot_id(argv[1], id) != 0) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error(String("ID out of range: ") + String(argv[1]));
+    }
+#endif
+    return 1;
+  }
+
+  return router::send(MOD_CFG, TASK_CONFIG_TRACK_DELETE, id);
+}
+
+int cmd::handle_track_dump_command(unsigned short argc, char *argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("TRACK_DUMP expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+
+  unsigned short id;
+  if (parse_track_slot_id(argv[1], id) != 0) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error(String("ID out of range: ") + String(argv[1]));
+    }
+#endif
+    return 1;
+  }
+
+  return this->dump_track_slot(id);
+}
+
+int cmd::handle_cfg_reset_command(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (_logger != nullptr) {
+      _logger->error("CFG_RESET expects no arguments");
+    }
+#endif
+    return 1;
+  }
+
+#ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Resetting config");
+  }
+#endif
+  return router::send(MOD_CFG, TASK_CONFIG_CFG_RESET);
+}
+
+int cmd::handle_unknown_command(unsigned short argc, char *argv[]) {
+#ifdef ERROR
+  if (_logger != nullptr) {
+    if (argc > 0 && argv != nullptr && argv[0] != nullptr && argv[0][0] != '\0') {
+      _logger->error(String("Unknown command: ") + String(argv[0]));
+    } else {
+      _logger->error("Unknown command");
+    }
+  }
+#endif
+  return 1;
+}
+
 int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[]) {
   switch (command) {
     case CMD_REBOOT:
-#ifdef INFO
-      if (_logger != nullptr) {
-        _logger->info("Rebooting");
-      }
-#endif
-      delay(200);
-      wdt_enable(WDTO_15MS);
-      while (true) {
-      }
+      return this->handle_reboot_command(argc);
 
     case CMD_DUMPCFG:
-#ifdef INFO
-      if (_logger != nullptr) {
-        _logger->dump_config();
-      }
-#endif
-      return 0;
-      
+      return this->handle_dumpcfg_command(argc);
+
     case CMD_PUT_TRACK:
-      if (argc != 7) {
-      #ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error("TRACK_PUT expects 6 arguments");
-        }
-      #endif
-        return 1;  
-      }
-      track_data new_track;
+      return this->handle_track_put_command(argc, argv);
 
-      if (parse_track_slot_id(argv[1], new_track.id) != 0) {
-      #ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error(String("ID out of range: ") + String(argv[1]));
-        }
-      #endif
-        return 1;
-      }
+    case CMD_DELETE_TRACK:
+      return this->handle_track_delete_command(argc, argv);
 
-      strncpy(new_track.name, argv[2], sizeof(new_track.name) - 1);
-      new_track.name[sizeof(new_track.name) - 1] = '\0';
-      
-      lat_lng pt_a;
-      pt_a.lat = strtod(argv[3], nullptr);
-      pt_a.lng = strtod(argv[4], nullptr);
-      new_track.pt_a = pt_a;
-
-      lat_lng pt_b;
-      pt_b.lat = strtod(argv[5], nullptr);
-      pt_b.lng = strtod(argv[6], nullptr);
-      new_track.pt_b = pt_b;
-      
-      #ifdef INFO
-      if (_logger != nullptr) {
-        _logger->info("Loading new track");
-        _logger->info(String("ID: ") + String(new_track.id));
-        _logger->info(String("Name: ") + new_track.name);
-        _logger->info(String("Point A lat: ") + String(new_track.pt_a.lat));
-        _logger->info(String("Point A lng: ") + String(new_track.pt_a.lng));
-        _logger->info(String("Point B lat: ") + String(new_track.pt_b.lat));
-        _logger->info(String("Point B lng: ") + String(new_track.pt_b.lng));
-      }
-      #endif
-      
-      track_temp_global_write(new_track);
-      router::send(MOD_CFG, TASK_CONFIG_WRITE_TEMP_TRACK);
-       
-      return 0;
-
-    case CMD_DELETE_TRACK: {
-      if (argc != 2) {
-#ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error("TRACK_DELETE expects 1 argument");
-        }
-#endif
-        return 1;
-      }
-
-      unsigned short id;
-      if (parse_track_slot_id(argv[1], id) != 0) {
-#ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error(String("ID out of range: ") + String(argv[1]));
-        }
-#endif
-        return 1;
-      }
-
-      return router::send(MOD_CFG, TASK_CONFIG_TRACK_DELETE, id);
-    }
-
-    case CMD_DUMP_TRACK: {
-      if (argc != 2) {
-#ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error("TRACK_DUMP expects 1 argument");
-        }
-#endif
-        return 1;
-      }
-
-      unsigned short id;
-      if (parse_track_slot_id(argv[1], id) != 0) {
-#ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error(String("ID out of range: ") + String(argv[1]));
-        }
-#endif
-        return 1;
-      }
-
-      return this->dump_track_slot(id);
-    }
+    case CMD_DUMP_TRACK:
+      return this->handle_track_dump_command(argc, argv);
 
     case CMD_CFG_RESET:
-      if (argc != 1) {
-#ifdef ERROR
-        if (_logger != nullptr) {
-          _logger->error("CFG_RESET expects no arguments");
-        }
-#endif
-        return 1;
-      }
-      #ifdef INFO
-      if (_logger != nullptr) {
-        _logger->info("Resetting config");
-      }
-      #endif
-      return router::send(MOD_CFG, TASK_CONFIG_CFG_RESET);
+      return this->handle_cfg_reset_command(argc);
 
     case CMD_UNKNOWN:
     default:
-#ifdef ERROR
-      if (_logger != nullptr) {
-        if (argc > 0 && argv != nullptr && argv[0] != nullptr && argv[0][0] != '\0') {
-          _logger->error(String("Unknown command: ") + String(argv[0]));
-        } else {
-          _logger->error("Unknown command");
-        }
-      }
-#endif
-      return 1;
+      return this->handle_unknown_command(argc, argv);
   }
 }
 
