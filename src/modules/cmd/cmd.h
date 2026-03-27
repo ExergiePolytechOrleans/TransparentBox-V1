@@ -18,7 +18,7 @@ private:
     CMD_UNKNOWN = 0,
     CMD_REBOOT,
     CMD_DUMPCFG,
-    CMD_LOAD_TRACK,
+    CMD_PUT_TRACK,
   };
 
   HardwareSerial *_data_stream;

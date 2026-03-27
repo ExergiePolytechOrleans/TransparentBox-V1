@@ -78,8 +78,8 @@ cmd::command_id cmd::parse_command_name(const char *input) {
     return CMD_DUMPCFG;
   }
 
-  if (strcmp(input, "TRACK_LOAD") == 0) {
-    return CMD_LOAD_TRACK;
+  if (strcmp(input, "TRACK_PUT") == 0) {
+    return CMD_PUT_TRACK;
   }
 
   return CMD_UNKNOWN;
@@ -106,7 +106,7 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
 #endif
       return 0;
       
-    case CMD_LOAD_TRACK:
+    case CMD_PUT_TRACK:
       if (argc != 7) {
       #ifdef ERROR
         if (_logger != nullptr) {
