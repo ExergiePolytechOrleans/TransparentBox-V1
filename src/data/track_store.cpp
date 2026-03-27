@@ -4,6 +4,7 @@
 #include "data/track_store.h"
 
  volatile track_data track_data_global = {};
+volatile track_data track_data_temp_global = {};
 
  void track_global_read(track_data& out) {
      copy_from_volatile(out, track_data_global);

@@ -7,7 +7,11 @@
 #include <EEPROM.h>
 
 extern volatile track_data track_data_global;
+extern volatile track_data track_data_temp_global;
 
 void track_global_read(track_data& out);
 int track_global_read(unsigned short idx, track_data& out);
 void track_global_write(const track_data& in);
+
+void track_temp_global_read(track_data& out);
+void track_temp_global_write(const track_data& in);
