@@ -49,6 +49,8 @@ private:
   int reset_cfg();
   int write_vbat_cal(double val);
   int write_vbat_low(double val);
+  int write_teng_low(double val);
+  int write_teng_high(double val);
 
 public:
   int push(const Task &task) override;

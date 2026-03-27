@@ -109,6 +109,16 @@ int config::write_vbat_low(double val) {
   return this->write_cfg();
 }
 
+int config::write_teng_low(double val) {
+  _config.teng_low = val;
+  return this->write_cfg();
+}
+
+int config::write_teng_high(double val) {
+  _config.teng_high = val;
+  return this->write_cfg();
+}
+
 config::config() : _logger(nullptr), _valid_config(true) {}
 
 config::config(system_logger *logger) : _logger(logger), _valid_config(true) {}
@@ -249,6 +259,7 @@ int config::handle_active_task(unsigned long timeout_ms) {
     memcpy(&cal_value, &_active_task.data, sizeof(double));
     int res = this->write_vbat_cal(cal_value);
     this->task_complete();
+    return res;
   }
 
   case TASK_CONFIG_VBAT_SET_LOW: {
@@ -256,6 +267,23 @@ int config::handle_active_task(unsigned long timeout_ms) {
     memcpy(&low_value, &_active_task.data, sizeof(double));
     int res = this->write_vbat_low(low_value);
     this->task_complete();
+    return res;
+  }
+
+  case TASK_CONFIG_TENG_SET_LOW: {
+    double low_value;
+    memcpy(&low_value, &_active_task.data, sizeof(double));
+    int res = this->write_teng_low(low_value);
+    this->task_complete();
+    return res;
+  }
+
+  case TASK_CONFIG_TENG_SET_HIGH: {
+    double high_value;
+    memcpy(&high_value, &_active_task.data, sizeof(double));
+    int res = this->write_teng_high(high_value);
+    this->task_complete();
+    return res;
   }
 
   default:
