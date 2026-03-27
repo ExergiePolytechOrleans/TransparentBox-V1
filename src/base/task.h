@@ -6,11 +6,18 @@
 #include <Arduino.h>
 
 enum module_id : uint8_t {
+    // modules/cmd
     MOD_CMD,
+    // modules/config
     MOD_CFG,
+    // modules/gps
     MOD_GPS,
+    // modules/lcd
     MOD_LCD,
+    // modules/battery
     MOD_BAT,
+    // modules/thermocouple
+    MOD_THC,
     MOD_COUNT,
     MOD_NULL,
     MOD_ALL,
