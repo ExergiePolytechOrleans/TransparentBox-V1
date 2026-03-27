@@ -61,6 +61,11 @@ int config::read_cfg() {
 int config::write_cfg() {
   EEPROM.put(0, _config);
   config_global_write(_config);
+  #ifdef INFO
+  if (_logger != nullptr) {
+    _logger->info("Config updated and saved to EEPROM");
+  }
+  #endif
   return 0;
 }
 
@@ -155,7 +160,9 @@ int config::handle_active_task(unsigned long timeout_ms) {
     return 0;
  
   case TASK_CONFIG_WRITE_TEMP_TRACK:
-    return this->write_track_from_temp();
+    int res = this->write_track_from_temp();
+    this->task_complete();
+    return res;
 
   default:
     break;
