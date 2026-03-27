@@ -61,10 +61,10 @@ void setup() {
   driver_display->print_message("GPS Init Complete");
   delay(1000);
 
-  driver_display->print_message("Bat Init...");
+  driver_display->print_message("Sensors Init...");
   battery_handler->init();
   delay(1000);
-  driver_display->print_message("Bat Init Complete");
+  driver_display->print_message("Sensors Init Complete");
   delay(1000);
   router::send(MOD_LCD, TASK_DISPLAY_DRIVER_PRIMARY);
 }
