@@ -22,6 +22,7 @@ typedef enum lcd_screen {
   gps_debug,
   msg_gps_fix,
   msg_track_detect_ok,
+  msg_config_no_tracks,
 } lcd_screen;
 
 } // namespace screen
@@ -61,6 +62,7 @@ private:
   int render_gps_debug();
   int render_msg_gps_fix();
   int render_msg_track_detect_ok();
+  int render_msg_config_no_tracks();
 
 public:
   int push(const Task &task) override;

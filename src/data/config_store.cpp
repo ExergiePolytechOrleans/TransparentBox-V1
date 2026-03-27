@@ -9,6 +9,6 @@
      copy_from_volatile(out, config_global);
  }
 
- void track_global_write(const vehicle_config& in) {
+ void config_global_write(const vehicle_config& in) {
      copy_to_volatile(config_global, in);
  }

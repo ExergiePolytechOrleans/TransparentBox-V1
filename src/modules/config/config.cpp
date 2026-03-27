@@ -25,16 +25,19 @@ config::~config() {}
 
 int config::read_cfg() {
   EEPROM.get(0, _config);
+  config_global_write(_config);
   return 0;
 }
 
 int config::write_cfg() {
   EEPROM.put(0, _config);
+  config_global_write(_config);
   return 0;
 }
 
 int config::write_cfg(const vehicle_config &new_config) {
   EEPROM.put(0, new_config);
+  config_global_write(new_config);
   return 0;
 }
 
@@ -50,6 +53,10 @@ int config::task_config_detect_track(unsigned long timeout_ms) {
   }
 
   if (!min_one) {
+    if (!_no_tracks_notice_shown) {
+      router::send(MOD_LCD, TASK_DISPLAY_MSG_CONFIG_NO_TRACKS, 3000);
+      _no_tracks_notice_shown = true;
+    }
     this->task_complete();
     return 1;
   }
@@ -83,10 +90,23 @@ int config::task_config_detect_track(unsigned long timeout_ms) {
     }
 
     if (task_data.last_checked >= 8) {
-      this->load_track(task_data.smallest_idx);
+      int load_res = 1;
+      if (task_data.smallest_idx > 0) {
+        load_res = this->load_track(task_data.smallest_idx);
+      }
+
       this->task_complete();
-      router::send(MOD_LCD, TASK_DISPLAY_MSG_TRACK_DETECT_OK, 4000);
-      return 0;
+      if (load_res == 0) {
+        _no_tracks_notice_shown = false;
+        router::send(MOD_LCD, TASK_DISPLAY_MSG_TRACK_DETECT_OK, 4000);
+        return 0;
+      }
+
+      if (!_no_tracks_notice_shown) {
+        router::send(MOD_LCD, TASK_DISPLAY_MSG_CONFIG_NO_TRACKS, 3000);
+        _no_tracks_notice_shown = true;
+      }
+      return 1;
     }
 
     if ((unsigned long)(millis() - start) >= timeout_ms) {

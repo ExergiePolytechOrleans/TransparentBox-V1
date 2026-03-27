@@ -34,6 +34,7 @@ private:
   Task _active_task = {};
   uint8_t _task_memory[64] = {};
   bool _task_memory_stale = true;
+  bool _no_tracks_notice_shown = false;
 
   int read_cfg();
   int write_cfg();

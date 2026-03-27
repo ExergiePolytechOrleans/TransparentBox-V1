@@ -60,6 +60,7 @@ bool lcd::is_message_task(task_type type) {
   switch (type) {
     case TASK_DISPLAY_MSG_GPS_FIX:
     case TASK_DISPLAY_MSG_TRACK_DETECT_OK:
+    case TASK_DISPLAY_MSG_CONFIG_NO_TRACKS:
       return true;
 
     default:
@@ -162,6 +163,15 @@ int lcd::render_msg_track_detect_ok() {
 
   _display->setCursor((20 - strlen(temp.name)) / 2, 2);
   this->print(temp.name);
+  return 0;
+}
+
+int lcd::render_msg_config_no_tracks() {
+  this->clear();
+  _display->setCursor(4, 1);
+  this->print("CONFIG INFO");
+  _display->setCursor(2, 2);
+  this->print("NO TRACKS LOADED");
   return 0;
 }
 
@@ -350,6 +360,10 @@ int lcd::loop(unsigned long timeout_ms) {
         activate_message(screen::msg_track_detect_ok, next_task.data);
         break;
 
+      case TASK_DISPLAY_MSG_CONFIG_NO_TRACKS:
+        activate_message(screen::msg_config_no_tracks, next_task.data);
+        break;
+
       default:
         break;
     }
@@ -390,6 +404,10 @@ int lcd::loop(unsigned long timeout_ms) {
 
     case screen::msg_track_detect_ok:
       this->render_msg_track_detect_ok();
+      break;
+
+    case screen::msg_config_no_tracks:
+      this->render_msg_config_no_tracks();
       break;
 
     default:
