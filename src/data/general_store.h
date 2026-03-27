@@ -4,6 +4,10 @@
 #pragma once
 
 extern volatile double vbat_global;
+extern volatile double teng_global;
 
 void vbat_global_read(double& out);
 void vbat_global_write(const double& in);
+
+void teng_global_read(double& out);
+void teng_global_write(const double& in);

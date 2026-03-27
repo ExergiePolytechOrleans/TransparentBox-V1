@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "thermocouple.h"
+#include "data/general_store.h"
 
 int thermocouple::push(const Task &task) { return _queue.push(task); }
 
@@ -20,5 +21,6 @@ int thermocouple::init() {
 int thermocouple::loop(unsigned long timeout_ms) {
    if (millis() > _last_read + _update_interval) {
     _temp = _thermocouple->readCelsius();
+    teng_global_write(_temp);
    } 
 }
