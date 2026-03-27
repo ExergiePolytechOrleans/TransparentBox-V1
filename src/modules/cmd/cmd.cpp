@@ -75,8 +75,8 @@ cmd::command_id cmd::parse_command_name(const char *input) {
     return CMD_REBOOT;
   }
 
-  if (strcmp(input, "DUMPCFG") == 0) {
-    return CMD_DUMPCFG;
+  if (strcmp(input, "CFG_DUMP") == 0) {
+    return CMD_CFG_DUMP;
   }
 
   if (strcmp(input, "TRACK_PUT") == 0) {
@@ -314,7 +314,7 @@ int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[])
     case CMD_REBOOT:
       return this->handle_reboot_command(argc);
 
-    case CMD_DUMPCFG:
+    case CMD_CFG_DUMP:
       return this->handle_dumpcfg_command(argc);
 
     case CMD_PUT_TRACK:

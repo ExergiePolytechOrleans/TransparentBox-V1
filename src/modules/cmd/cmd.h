@@ -17,11 +17,11 @@ private:
   enum command_id {
     CMD_UNKNOWN = 0,
     CMD_REBOOT,
-    CMD_DUMPCFG,
     CMD_PUT_TRACK,
     CMD_DELETE_TRACK,
     CMD_DUMP_TRACK,
     CMD_CFG_RESET,
+    CMD_CFG_DUMP,
   };
 
   HardwareSerial *_data_stream;
