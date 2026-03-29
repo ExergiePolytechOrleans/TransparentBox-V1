@@ -11,17 +11,16 @@
 #include "base/module_base.h"
 #include "data/config_store.h"
 
-class system_logger
-{
+class SystemLogger {
 private:
-    HardwareSerial *_output;
-    int print_message(String pre, String message);
+    HardwareSerial *output_;
+    int printMessage(String prefix, String message);
 public:
-    system_logger(HardwareSerial *output);
-    ~system_logger();
+    SystemLogger(HardwareSerial *output);
+    ~SystemLogger();
     #ifdef INFO
     int info(String message);
-    int dump_config();
+    int dumpConfig();
     #endif
     
     #ifdef WARN
@@ -37,6 +36,6 @@ public:
     #endif
 
     #ifdef DEEP_DEBUG
-    int deep_debug(String message);
+    int deepDebug(String message);
     #endif
 };

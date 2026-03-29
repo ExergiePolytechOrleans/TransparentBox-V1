@@ -6,4 +6,4 @@
 #include "base/module_base.h"
 #include "base/task.h"
 
-extern module_base* modules[MOD_COUNT];
+extern ModuleBase* module_registry[module::Count];

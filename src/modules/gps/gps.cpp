@@ -6,43 +6,43 @@
 
 #define MOD "modules/gps/gps.h"
 
-int gps::push(const Task &task) {
-  return _queue.push(task);
+int Gps::push(const Task &task) {
+  return queue_.push(task);
 }
 
-gps::gps(HardwareSerial *data_stream)
-    : _gps(nullptr), _data_stream(data_stream), _logger(nullptr) {
-  _gps = new TinyGPSPlus();
+Gps::Gps(HardwareSerial *data_stream)
+    : gps_(nullptr), data_stream_(data_stream), logger_(nullptr) {
+  gps_ = new TinyGPSPlus();
 }
 
-gps::gps(HardwareSerial *data_stream, system_logger *logger)
-    : _gps(nullptr), _data_stream(data_stream), _logger(logger) {
-  _gps = new TinyGPSPlus();
+Gps::Gps(HardwareSerial *data_stream, SystemLogger *logger)
+    : gps_(nullptr), data_stream_(data_stream), logger_(logger) {
+  gps_ = new TinyGPSPlus();
 }
 
-gps::~gps() {
-  _data_stream = nullptr;
-  delete _gps;
-  _gps = nullptr;
+Gps::~Gps() {
+  data_stream_ = nullptr;
+  delete gps_;
+  gps_ = nullptr;
 }
 
-int gps::init() {
-  _data_stream->begin(9600);
+int Gps::init() {
+  data_stream_->begin(9600);
   return 0;
 }
 
-int gps::loop(unsigned long timeout_ms) {
+int Gps::loop(unsigned long timeout_ms) {
   unsigned long timeout = millis() + timeout_ms;
 
-  while (_data_stream->available() > 0) {
-    if (_gps->encode(_data_stream->read())) {
-      gps_global_write(this->get_data());
-      uint32_t current_fix_val = _gps->sentencesWithFix();
-      if (_last_fix_val == 0 && current_fix_val > 0) {
-        router::send(MOD_LCD, TASK_DISPLAY_MSG_GPS_FIX, 2000);
-        router::send(MOD_CFG, TASK_CONFIG_TRACK_DETECT);
+  while (data_stream_->available() > 0) {
+    if (gps_->encode(data_stream_->read())) {
+      gpsGlobalWrite(this->getData());
+      uint32_t current_fix_value = gps_->sentencesWithFix();
+      if (last_fix_value_ == 0 && current_fix_value > 0) {
+        router::send(module::Lcd, task::DisplayMsgGpsFix, 2000);
+        router::send(module::Config, task::ConfigTrackDetect);
       }
-      _last_fix_val = current_fix_val;
+      last_fix_value_ = current_fix_value;
     }
 
     if (millis() > timeout) {
@@ -53,30 +53,30 @@ int gps::loop(unsigned long timeout_ms) {
   return 0;
 }
 
-gps_data gps::get_data() {
-  gps_data output;
+GpsData Gps::getData() {
+  GpsData output;
 
-  output.altitude.age = _gps->altitude.age();
-  output.altitude.valid = _gps->altitude.isValid();
-  output.altitude.value = _gps->altitude.meters();
+  output.altitude_.age_ = gps_->altitude.age();
+  output.altitude_.valid_ = gps_->altitude.isValid();
+  output.altitude_.value_ = gps_->altitude.meters();
 
-  output.lat.age = _gps->location.age();
-  output.lat.valid = _gps->location.isValid();
-  output.lat.value = _gps->location.lat();
+  output.lat_.age_ = gps_->location.age();
+  output.lat_.valid_ = gps_->location.isValid();
+  output.lat_.value_ = gps_->location.lat();
 
-  output.lng.age = _gps->location.age();
-  output.lng.valid = _gps->location.isValid();
-  output.lng.value = _gps->location.lng();
+  output.lng_.age_ = gps_->location.age();
+  output.lng_.valid_ = gps_->location.isValid();
+  output.lng_.value_ = gps_->location.lng();
 
-  output.speed.age = _gps->speed.age();
-  output.speed.valid = _gps->speed.isValid();
-  output.speed.value = _gps->speed.kmph();
+  output.speed_.age_ = gps_->speed.age();
+  output.speed_.valid_ = gps_->speed.isValid();
+  output.speed_.value_ = gps_->speed.kmph();
 
-  output.course.age = _gps->course.age();
-  output.course.valid = _gps->course.isValid();
-  output.course.value = _gps->course.deg();
+  output.course_.age_ = gps_->course.age();
+  output.course_.valid_ = gps_->course.isValid();
+  output.course_.value_ = gps_->course.deg();
 
-  output.num_fix = _gps->sentencesWithFix();
+  output.num_fix_ = gps_->sentencesWithFix();
 
   return output;
 }

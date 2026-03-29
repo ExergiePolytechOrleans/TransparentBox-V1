@@ -3,4 +3,4 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "base/modules.h"
 
-module_base* modules[MOD_COUNT] = {nullptr};
+ModuleBase* module_registry[module::Count] = {nullptr};

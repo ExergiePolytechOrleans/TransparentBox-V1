@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "gps_store.h"
 
- volatile gps_data gps_data_global = {};
+ volatile GpsData gps_data_global = {};
 
- void gps_global_read(gps_data& out) {
-     copy_from_volatile(out, gps_data_global);
+ void gpsGlobalRead(GpsData& out) {
+     copyFromVolatile(out, gps_data_global);
  }
 
- void gps_global_write(const gps_data& in) {
-     copy_to_volatile(gps_data_global, in);
+ void gpsGlobalWrite(const GpsData& in) {
+     copyToVolatile(gps_data_global, in);
  }

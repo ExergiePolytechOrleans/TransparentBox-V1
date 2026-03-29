@@ -6,37 +6,37 @@
 
 namespace router {
 int send(const Task &task) {
-  if (task.target == MOD_ALL) {
+  if (task.target_ == module::All) {
     int ret = 0;
-    for (size_t i = 0; i < MOD_COUNT; i++) {
+    for (size_t index = 0; index < module::Count; index++) {
 
-      module_base *mod = modules[i];
+      ModuleBase *module_ptr = module_registry[index];
 
-      if (mod == nullptr) {
+      if (module_ptr == nullptr) {
         continue;
       }
 
-      if (mod->push(task) != 0) {
+      if (module_ptr->push(task) != 0) {
         ret = 1;
       }
     }
     return ret;
   }
-  if (task.target >= MOD_COUNT) {
+  if (task.target_ >= module::Count) {
     return 1;
   }
 
-  module_base *mod = modules[task.target];
+  ModuleBase *module_ptr = module_registry[task.target_];
 
-  if (mod == nullptr) {
+  if (module_ptr == nullptr) {
     return 1;
   }
 
-  return mod->push(task);
+  return module_ptr->push(task);
 }
 
-int send(module_id target, task_type type, uint32_t data) {
-  Task t{target, type, data};
-  return send(t);
+int send(module::Id target, task::Type type, uint32_t data) {
+  Task task{target, type, data};
+  return send(task);
 }
 } // namespace router

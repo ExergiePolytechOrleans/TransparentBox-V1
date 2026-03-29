@@ -12,20 +12,20 @@
 #include <Arduino.h>
 #include <max6675.h>
 
-class thermocouple : public module_base {
+class Thermocouple : public ModuleBase {
 private:
-  system_logger *_logger;
-  ring_buffer<Task, 16> _queue;
-  MAX6675 *_thermocouple;
-  double _temp;
-  unsigned long _update_interval = 1000;
-  unsigned long _last_read = 0;
+  SystemLogger *logger_;
+  RingBuffer<Task, 16> queue_;
+  MAX6675 *thermocouple_;
+  double temperature_;
+  unsigned long update_interval_ = 1000;
+  unsigned long last_read_at_ = 0;
 
 public:
   int push(const Task &task) override;
-  thermocouple();
-  thermocouple(system_logger *logger);
-  ~thermocouple();
+  Thermocouple();
+  Thermocouple(SystemLogger *logger);
+  ~Thermocouple();
   int init();
   int loop(unsigned long timeout_ms = 500);
 };

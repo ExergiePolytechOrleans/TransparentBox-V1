@@ -9,5 +9,5 @@
 
 namespace router {
     int send(const Task& task);
-    int send(module_id target, task_type type, uint32_t data = 0);
+    int send(module::Id target, task::Type type, uint32_t data = 0);
 }

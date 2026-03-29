@@ -7,62 +7,57 @@
 
 #include <stdio.h>
 
-system_logger::system_logger(HardwareSerial *output)
-{
-    _output = output;
-}
+SystemLogger::SystemLogger(HardwareSerial *output) { output_ = output; }
 
-system_logger::~system_logger()
-{
-}
+SystemLogger::~SystemLogger() {}
 
-int system_logger::print_message(String pre, String message) {
-    if (_output->availableForWrite()) {
-        _output->print(millis());
-        _output->print(pre);
-        _output->println(message);
+int SystemLogger::printMessage(String prefix, String message) {
+    if (output_->availableForWrite()) {
+        output_->print(millis());
+        output_->print(prefix);
+        output_->println(message);
         return 0;
     }
     return 1;
 }
 
 #ifdef INFO
-int system_logger::info(String message) {
-    return this->print_message(" [INFO] ", message);
+int SystemLogger::info(String message) {
+    return this->printMessage(" [INFO] ", message);
 }
 
-int system_logger::dump_config() {
-    vehicle_config temp;
-    config_global_read(temp);
+int SystemLogger::dumpConfig() {
+    VehicleConfig config;
+    configGlobalRead(config);
 
     char buffer[64];
 
     // Auto detect
     snprintf(buffer, sizeof(buffer),
         "\tAuto detect tracks: %d",
-        temp.auto_detect_track
+        config.auto_detect_track_
     );
     this->info(String(buffer));
 
     // Track fallback
     snprintf(buffer, sizeof(buffer),
         "\tTrack fallback: %d",
-        temp.track_fallback
+        config.track_fallback_
     );
     this->info(String(buffer));
     
     
-    this->info("\tVBAT cal factor: " + String(temp.vbat_calibration, 6));
-    this->info("\tVBAT low: " + String(temp.vbat_low, 2));
-    this->info("\tTENG low: " + String(temp.teng_low, 2));
-    this->info("\tTENG high: " + String(temp.teng_high, 2));
+    this->info("\tVBAT cal factor: " + String(config.vbat_calibration_, 6));
+    this->info("\tVBAT low: " + String(config.vbat_low_, 2));
+    this->info("\tTENG low: " + String(config.teng_low_, 2));
+    this->info("\tTENG high: " + String(config.teng_high_, 2));
 
     // Track slots (one per line)
     for (size_t i = 0; i < 8; i++) {
         snprintf(buffer, sizeof(buffer),
             "\tTrack slot %d: %d",
             i + 1,
-            temp.track_slot_occupied[i]
+            config.track_slot_occupied_[i]
         );
         this->info(String(buffer));
     }
@@ -74,25 +69,25 @@ int system_logger::dump_config() {
 #endif
 
 #ifdef WARN
-int system_logger::warn(String message) {
-    return this->print_message(" [WARNING] ", message);
+int SystemLogger::warn(String message) {
+    return this->printMessage(" [WARNING] ", message);
 }
 #endif
 
 #ifdef ERROR
-int system_logger::error(String message) {
-    return this->print_message(" [ERROR] ", message);
+int SystemLogger::error(String message) {
+    return this->printMessage(" [ERROR] ", message);
 }
 #endif
 
 #ifdef DEBUG
-int system_logger::debug(String message) {
-    return this->print_message(" [DEBUG] ", message);
+int SystemLogger::debug(String message) {
+    return this->printMessage(" [DEBUG] ", message);
 }
 #endif
 
 #ifdef DEEP_DEBUG
-int system_logger::deep_debug(String message) {
-    return this->print_message(" [DEEP_DEBUG] ", message);
+int SystemLogger::deepDebug(String message) {
+    return this->printMessage(" [DEEP_DEBUG] ", message);
 }
 #endif

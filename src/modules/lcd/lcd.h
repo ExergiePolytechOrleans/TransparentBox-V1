@@ -18,34 +18,34 @@
 
 namespace screen {
 
-typedef enum lcd_screen {
-  blank,
-  gps_debug,
-  driver_primary,
-  msg_gps_fix,
-  msg_track_detect_ok,
-  msg_config_no_tracks,
-  msg_battery_low,
-} lcd_screen;
+enum LcdScreen : uint8_t {
+  Blank,
+  GpsDebug,
+  DriverPrimary,
+  MsgGpsFix,
+  MsgTrackDetectOk,
+  MsgConfigNoTracks,
+  MsgBatteryLow,
+};
 
 } // namespace screen
 
-class lcd : public module_base {
+class Lcd : public ModuleBase {
 private:
-  LiquidCrystal_I2C *_display;
-  bool _dispaly_cleared;
-  system_logger *_logger = nullptr;
-  screen::lcd_screen _screen;
-  screen::lcd_screen _data_screen;
-  screen::lcd_screen _msg_screen;
-  unsigned long _last_render;
-  unsigned long _frame_duration;
-  unsigned long _msg_end = 0;
-  bool _msg_active = false;
-  bool _force_render = false;
-  ring_buffer<Task, 16> _queue;
-  Task _deferred_task{};
-  bool _deferred_task_valid = false;
+  LiquidCrystal_I2C *display_;
+  bool display_cleared_;
+  SystemLogger *logger_ = nullptr;
+  screen::LcdScreen screen_;
+  screen::LcdScreen data_screen_;
+  screen::LcdScreen message_screen_;
+  unsigned long last_render_;
+  unsigned long frame_duration_;
+  unsigned long message_end_ = 0;
+  bool message_active_ = false;
+  bool force_render_ = false;
+  RingBuffer<Task, 16> queue_;
+  Task deferred_task_{};
+  bool deferred_task_valid_ = false;
 
   void clear();
   void print(const String &msg);
@@ -57,24 +57,24 @@ private:
   void print(unsigned int i, int base = 10);
   void print(int i, int base = 10);
 
-  bool is_message_task(task_type type);
-  void activate_message(screen::lcd_screen msg_screen, unsigned long duration_ms);
-  void expire_message_if_needed(unsigned long now);
-  screen::lcd_screen get_active_screen() const;
+  bool isMessageTask(task::Type type);
+  void activateMessage(screen::LcdScreen msg_screen, unsigned long duration_ms);
+  void expireMessageIfNeeded(unsigned long now);
+  screen::LcdScreen getActiveScreen() const;
 
-  int render_gps_debug();
-  int render_driver_primary();
-  int render_msg_gps_fix();
-  int render_msg_track_detect_ok();
-  int render_msg_config_no_tracks();
-  int render_msg_battery_low();
+  int renderGpsDebug();
+  int renderDriverPrimary();
+  int renderMsgGpsFix();
+  int renderMsgTrackDetectOk();
+  int renderMsgConfigNoTracks();
+  int renderMsgBatteryLow();
 
 public:
   int push(const Task &task) override;
-  lcd();
-  lcd(system_logger *logger);
-  ~lcd();
+  Lcd();
+  Lcd(SystemLogger *logger);
+  ~Lcd();
   int init();
-  int print_message(String message);
+  int printMessage(String message);
   int loop(unsigned long timeout_ms = 500);
 };

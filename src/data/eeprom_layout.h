@@ -7,19 +7,19 @@
 
 namespace eeprom_layout {
 
-static const uint16_t total_bytes = 4096;
-static const uint16_t config_addr = 0;
-static const uint16_t config_reserved_bytes = 256;
-static const uint16_t track_slots = 8;
-static const uint16_t track_slot_bytes = 128;
-static const uint16_t track_base_addr = config_addr + config_reserved_bytes;
-static const uint16_t track_end_addr = track_base_addr + (track_slots * track_slot_bytes);
-static const uint16_t free_after_tracks = total_bytes - track_end_addr;
+static const uint16_t TOTAL_BYTES = 4096;
+static const uint16_t CONFIG_ADDR = 0;
+static const uint16_t CONFIG_RESERVED_BYTES = 256;
+static const uint16_t TRACK_SLOTS = 8;
+static const uint16_t TRACK_SLOT_BYTES = 128;
+static const uint16_t TRACK_BASE_ADDR = CONFIG_ADDR + CONFIG_RESERVED_BYTES;
+static const uint16_t TRACK_END_ADDR = TRACK_BASE_ADDR + (TRACK_SLOTS * TRACK_SLOT_BYTES);
+static const uint16_t FREE_AFTER_TRACKS = TOTAL_BYTES - TRACK_END_ADDR;
 
-static_assert(track_end_addr <= total_bytes, "EEPROM layout exceeds physical storage");
+static_assert(TRACK_END_ADDR <= TOTAL_BYTES, "EEPROM layout exceeds physical storage");
 
-inline uint16_t track_slot_addr(uint8_t idx) {
-  return track_base_addr + ((idx - 1) * track_slot_bytes);
+inline uint16_t trackSlotAddr(uint8_t idx) {
+  return TRACK_BASE_ADDR + ((idx - 1) * TRACK_SLOT_BYTES);
 }
 
 } // namespace eeprom_layout

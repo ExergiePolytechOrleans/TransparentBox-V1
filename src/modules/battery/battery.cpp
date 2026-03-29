@@ -7,67 +7,72 @@
 #include "data/config_store.h"
 #include "data/general_store.h"
 
-int battery::calibrate(const Task &task) {
+int Battery::calibrate(const Task &task) {
   double actual_voltage;
-  memcpy(&actual_voltage, &task.data, sizeof(double));
+  memcpy(&actual_voltage, &task.data_, sizeof(double));
   int adc_read = analogRead(VBAT_PIN);
   double cal_factor = actual_voltage / adc_read;
   uint32_t output_val;
   memcpy(&output_val, &cal_factor, sizeof(uint32_t));
-  router::send(MOD_CFG, TASK_CONFIG_VBAT_CAL_SET, output_val);
+  router::send(module::Config, task::ConfigVbatCalSet, output_val);
   return 0;
 }
 
-int battery::push(const Task &task) { return _queue.push(task); }
+int Battery::push(const Task &task) { return queue_.push(task); }
 
-battery::battery() : _logger(nullptr) {}
+Battery::Battery() : logger_(nullptr) {}
 
-battery::battery(system_logger *logger) : _logger(logger) {}
+Battery::Battery(SystemLogger *logger) : logger_(logger) {}
 
-battery::~battery() {}
+Battery::~Battery() {}
 
-int battery::init() {
+int Battery::init() {
   pinMode(VBAT_PIN, INPUT);
-  vehicle_config config;
-  config_global_read(config);
-  _cal = config.vbat_calibration;
-  _low = config.vbat_low;
+  VehicleConfig config;
+  configGlobalRead(config);
+  calibration_ = config.vbat_calibration_;
+  low_threshold_ = config.vbat_low_;
+  return 0;
 }
 
-int battery::loop(unsigned long timeout_ms) {
-  if (millis() > _last_read + _update_interval) {
-    int adc_read = analogRead(VBAT_PIN);
-    _vbat = _cal * adc_read;
+int Battery::loop(unsigned long timeout_ms) {
+  (void)timeout_ms;
 
-    vbat_global_write(_vbat);
-    if (_vbat < _low) {
-        if (_warning_sent == 0 || millis() > _warning_sent + _warning_timeout) {
-            router::send(MOD_LCD, TASK_DISPLAY_MSG_BAT_LOW, 2000);
-            _warning_sent = millis();
+  if (millis() > last_read_at_ + update_interval_) {
+    int adc_read = analogRead(VBAT_PIN);
+    vbat_ = calibration_ * adc_read;
+
+    vbatGlobalWrite(vbat_);
+    if (vbat_ < low_threshold_) {
+        if (warning_sent_at_ == 0 || millis() > warning_sent_at_ + warning_timeout_) {
+            router::send(module::Lcd, task::DisplayMsgBatteryLow, 2000);
+            warning_sent_at_ = millis();
         }
     }
+    last_read_at_ = millis();
   }
-  Task active_task;
-  int res = _queue.pop(active_task);
-  if (res == 0) {
-    if (active_task.target == MOD_BAT) {
 
-      switch (active_task.type) {
-      case TASK_BATTERY_CAL:
+  Task active_task;
+  int res = queue_.pop(active_task);
+  if (res == 0) {
+    if (active_task.target_ == module::Battery) {
+
+      switch (active_task.type_) {
+      case task::BatteryCal:
         this->calibrate(active_task);
         break;
 
       default:
         break;
       }
-    } else if (active_task.target == MOD_ALL) {
-        switch (active_task.type)
+    } else if (active_task.target_ == module::All) {
+        switch (active_task.type_)
         {
-        case TASK_ALL_CONFIG_UPDATED: {
-            vehicle_config config; 
-            config_global_read(config);
-            _cal = config.vbat_calibration;
-            _low = config.vbat_low;
+        case task::AllConfigUpdated: {
+            VehicleConfig config; 
+            configGlobalRead(config);
+            calibration_ = config.vbat_calibration_;
+            low_threshold_ = config.vbat_low_;
             break;
         }
         

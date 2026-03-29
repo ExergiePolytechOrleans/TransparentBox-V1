@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "data/config_store.h"
 
- volatile vehicle_config config_global = {};
+ volatile VehicleConfig config_global = {};
 
- void config_global_read(vehicle_config& out) {
-     copy_from_volatile(out, config_global);
+ void configGlobalRead(VehicleConfig& out) {
+     copyFromVolatile(out, config_global);
  }
 
- void config_global_write(const vehicle_config& in) {
-     copy_to_volatile(config_global, in);
+ void configGlobalWrite(const VehicleConfig& in) {
+     copyToVolatile(config_global, in);
  }

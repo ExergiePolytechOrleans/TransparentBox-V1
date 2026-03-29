@@ -4,34 +4,34 @@
 #include "data/track_store.h"
 #include "data/eeprom_layout.h"
 
- volatile track_data track_data_global = {};
-volatile track_data track_data_temp_global = {};
+ volatile TrackData track_data_global = {};
+volatile TrackData track_data_temp_global = {};
 
- void track_global_read(track_data& out) {
-     copy_from_volatile(out, track_data_global);
+ void trackGlobalRead(TrackData& out) {
+     copyFromVolatile(out, track_data_global);
  }
 
- int track_global_read(unsigned short idx, track_data& out) {
+ int trackGlobalRead(unsigned short idx, TrackData& out) {
      if (idx < 1 || idx > 8) {
         return 1;
      }
-     track_data temp;
-     EEPROM.get(eeprom_layout::track_slot_addr(idx), temp);
-     if (temp.magic != CONFIG_MAGIC) {
+     TrackData track_data;
+     EEPROM.get(eeprom_layout::trackSlotAddr(idx), track_data);
+     if (track_data.magic_ != CONFIG_MAGIC) {
         return 1;
      }
-     out = temp;
+     out = track_data;
      return 0;
  }
 
- void track_global_write(const track_data& in) {
-     copy_to_volatile(track_data_global, in);
+ void trackGlobalWrite(const TrackData& in) {
+     copyToVolatile(track_data_global, in);
  }
 
- void track_temp_global_read(track_data& out) {
-     copy_from_volatile(out, track_data_temp_global);
+ void trackTempGlobalRead(TrackData& out) {
+     copyFromVolatile(out, track_data_temp_global);
  }
 
- void track_temp_global_write(const track_data& in) {
-     copy_to_volatile(track_data_temp_global, in);
+ void trackTempGlobalWrite(const TrackData& in) {
+     copyToVolatile(track_data_temp_global, in);
  }

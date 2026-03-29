@@ -6,51 +6,52 @@
 #include <string.h>
 
 #define CONFIG_MAGIC 0xBEEF
-struct vehicle_config{
-    uint16_t magic = CONFIG_MAGIC;
-    bool auto_detect_track = true;
-    uint8_t track_fallback = 0;
-    bool track_slot_occupied[8] = {false};
-    double vbat_calibration = 0;
-    double vbat_low = 0;
-    double teng_low = 0;
-    double teng_high = 0;
+
+struct VehicleConfig {
+    uint16_t magic_ = CONFIG_MAGIC;
+    bool auto_detect_track_ = true;
+    uint8_t track_fallback_ = 0;
+    bool track_slot_occupied_[8] = {false};
+    double vbat_calibration_ = 0;
+    double vbat_low_ = 0;
+    double teng_low_ = 0;
+    double teng_high_ = 0;
 };
 
-struct lat_lng {
-    double lat;
-    double lng;
+struct LatLng {
+    double lat_;
+    double lng_;
 };
 
-struct track_data {
-    uint16_t magic = CONFIG_MAGIC;
-    unsigned short id;
-    char name[21];
-    lat_lng pt_a;
-    lat_lng pt_b;
+struct TrackData {
+    uint16_t magic_ = CONFIG_MAGIC;
+    unsigned short id_;
+    char name_[21];
+    LatLng point_a_;
+    LatLng point_b_;
 };
 
-struct gps_sub_data {
-    uint32_t age;
-    bool valid;
-    double value;
+struct GpsSubData {
+    uint32_t age_;
+    bool valid_;
+    double value_;
 };
 
-struct gps_data {
-    gps_sub_data altitude;
-    gps_sub_data lat;
-    gps_sub_data lng;
-    gps_sub_data speed;
-    gps_sub_data course;
-    uint32_t num_fix;
+struct GpsData {
+    GpsSubData altitude_;
+    GpsSubData lat_;
+    GpsSubData lng_;
+    GpsSubData speed_;
+    GpsSubData course_;
+    uint32_t num_fix_;
 };
 
 template<typename T>
-inline void copy_from_volatile(T& dst, const volatile T& src) {
+inline void copyFromVolatile(T& dst, const volatile T& src) {
     memcpy(&dst, (const void*)&src, sizeof(T));
 }
 
 template<typename T>
-inline void copy_to_volatile(volatile T& dst, const T& src) {
+inline void copyToVolatile(volatile T& dst, const T& src) {
     memcpy((void*)&dst, &src, sizeof(T));
 }

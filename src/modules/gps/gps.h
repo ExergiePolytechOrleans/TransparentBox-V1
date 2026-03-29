@@ -13,20 +13,20 @@
 #include "data/gps_store.h"
 #include "base/router.h"
 
-class gps : public module_base {
+class Gps : public ModuleBase {
 private:
-  TinyGPSPlus *_gps;
-  HardwareSerial *_data_stream;
-  system_logger *_logger;
-  ring_buffer<Task, 16> _queue;
-  uint32_t _last_fix_val = 0;
+  TinyGPSPlus *gps_;
+  HardwareSerial *data_stream_;
+  SystemLogger *logger_;
+  RingBuffer<Task, 16> queue_;
+  uint32_t last_fix_value_ = 0;
 
 public:
   int push(const Task &task) override;
-  gps(HardwareSerial *data_stream);
-  gps(HardwareSerial *data_stream, system_logger *logger);
-  ~gps();
+  Gps(HardwareSerial *data_stream);
+  Gps(HardwareSerial *data_stream, SystemLogger *logger);
+  ~Gps();
   int loop(unsigned long timeout_ms = 500);
   int init();
-  gps_data get_data();
+  GpsData getData();
 };

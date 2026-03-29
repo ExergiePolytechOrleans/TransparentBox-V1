@@ -9,25 +9,25 @@
 #include "modules/logger/system_logger.h"
 #include <Arduino.h>
 
-class battery : public module_base {
+class Battery : public ModuleBase {
 
 private:
-  system_logger *_logger;
-  ring_buffer<Task, 16> _queue;
-  double _vbat = 0;
-  double _cal = 0;
-  double _low = 0;
-  unsigned long _warning_sent = 0;
-  unsigned long _warning_timeout = 10000;
-  unsigned long _update_interval = 1000;
-  unsigned long _last_read = 0;
+  SystemLogger *logger_;
+  RingBuffer<Task, 16> queue_;
+  double vbat_ = 0;
+  double calibration_ = 0;
+  double low_threshold_ = 0;
+  unsigned long warning_sent_at_ = 0;
+  unsigned long warning_timeout_ = 10000;
+  unsigned long update_interval_ = 1000;
+  unsigned long last_read_at_ = 0;
   int calibrate(const Task& task);
 
 public:
   int push(const Task &task) override;
-  battery();
-  battery(system_logger *logger);
-  ~battery();
+  Battery();
+  Battery(SystemLogger *logger);
+  ~Battery();
   int init();
   int loop(unsigned long timeout_ms = 500);
 };

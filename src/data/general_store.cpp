@@ -6,18 +6,18 @@
  volatile double vbat_global = 0;
  volatile double teng_global = 0;
 
- void vbat_global_read(double& out) {
+ void vbatGlobalRead(double& out) {
      out = vbat_global;
  }
 
- void vbat_global_write(const double& in) {
+ void vbatGlobalWrite(const double& in) {
      vbat_global = in;
  }
 
- void teng_global_read(double& out) {
+ void tengGlobalRead(double& out) {
      out = vbat_global;
  }
 
- void teng_global_write(const double& in) {
+ void tengGlobalWrite(const double& in) {
      vbat_global = in;
  }

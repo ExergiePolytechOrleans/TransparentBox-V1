@@ -16,63 +16,62 @@
 #include "modules/battery/battery.h"
 
 
+SystemLogger *logger = new SystemLogger(&Serial);
 
-system_logger *logger_output = new system_logger(&Serial);
-
-lcd *driver_display = new lcd(logger_output);
-gps *gps_module = new gps(&Serial2, logger_output);
-config *system_config = new config(logger_output);
-cmd *command_handler = new cmd(&Serial, logger_output);
-battery *battery_handler = new battery(logger_output);
+Lcd *display = new Lcd(logger);
+Gps *gps_module = new Gps(&Serial2, logger);
+Config *system_config = new Config(logger);
+Cmd *command_handler = new Cmd(&Serial, logger);
+Battery *battery_module = new Battery(logger);
 
 
 void setup() {
   wdt_disable();
 
-  modules[MOD_LCD] = driver_display;
-  modules[MOD_GPS] = gps_module;
-  modules[MOD_CFG] = system_config;
-  modules[MOD_CMD] = command_handler;
-  modules[MOD_BAT] = battery_handler;
+  module_registry[module::Lcd] = display;
+  module_registry[module::Gps] = gps_module;
+  module_registry[module::Config] = system_config;
+  module_registry[module::Cmd] = command_handler;
+  module_registry[module::Battery] = battery_module;
 
-  driver_display->init();
-  driver_display->print_message("Starting Initialization");
+  display->init();
+  display->printMessage("Starting Initialization");
   delay(1000);
 
-  driver_display->print_message("Cmd Init...");
+  display->printMessage("Cmd Init...");
   command_handler->init();
   delay(1000);
-  driver_display->print_message("Cmd Init Complete");
+  display->printMessage("Cmd Init Complete");
   delay(1000);
 
-  driver_display->print_message("Config Init...");
-  int result = system_config->auto_init();
+  display->printMessage("Config Init...");
+  int result = system_config->autoInit();
   delay(1000);
   if (result != 0) {
-    driver_display->print_message("Configuration Read Failed");
+    display->printMessage("Configuration Read Failed");
   } else {
-    driver_display->print_message("Config Init Complete");
+    display->printMessage("Config Init Complete");
   }
   delay(1000);
 
-  driver_display->print_message("GPS Init...");
+  display->printMessage("GPS Init...");
   gps_module->init();
   delay(1000);
-  driver_display->print_message("GPS Init Complete");
+  display->printMessage("GPS Init Complete");
   delay(1000);
 
-  driver_display->print_message("Sensors Init...");
-  battery_handler->init();
+  display->printMessage("Sensors Init...");
+  battery_module->init();
   delay(1000);
-  driver_display->print_message("Sensors Init Complete");
+  display->printMessage("Sensors Init Complete");
   delay(1000);
-  router::send(MOD_LCD, TASK_DISPLAY_DRIVER_PRIMARY);
+  router::send(module::Lcd, task::DisplayDriverPrimary);
 }
 
 void loop() {
   gps_module->loop();
-  driver_display->loop();
-  command_handler->parse_task();
+  display->loop();
+  command_handler->parseTask();
   system_config->loop();
-  battery_handler->loop();
+  battery_module->loop();
 }

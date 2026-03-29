@@ -5,22 +5,26 @@
 #include "thermocouple.h"
 #include "data/general_store.h"
 
-int thermocouple::push(const Task &task) { return _queue.push(task); }
+int Thermocouple::push(const Task &task) { return queue_.push(task); }
 
-thermocouple::thermocouple() : _logger(nullptr) {}
+Thermocouple::Thermocouple() : logger_(nullptr) {}
 
-thermocouple::thermocouple(system_logger *logger) : _logger(logger) {}
+Thermocouple::Thermocouple(SystemLogger *logger) : logger_(logger) {}
 
-thermocouple::~thermocouple() {}
+Thermocouple::~Thermocouple() {}
 
-int thermocouple::init() {
-    _thermocouple = new MAX6675(THERMO_SCK, THERMO_CS, THERMO_SO);
+int Thermocouple::init() {
+    thermocouple_ = new MAX6675(THERMO_SCK, THERMO_CS, THERMO_SO);
     return 0;
 }
 
-int thermocouple::loop(unsigned long timeout_ms) {
-   if (millis() > _last_read + _update_interval) {
-    _temp = _thermocouple->readCelsius();
-    teng_global_write(_temp);
+int Thermocouple::loop(unsigned long timeout_ms) {
+   (void)timeout_ms;
+
+   if (millis() > last_read_at_ + update_interval_) {
+    temperature_ = thermocouple_->readCelsius();
+    tengGlobalWrite(temperature_);
+    last_read_at_ = millis();
    } 
+   return 0;
 }

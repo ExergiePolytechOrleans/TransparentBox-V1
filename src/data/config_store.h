@@ -6,7 +6,7 @@
 #include "custom_types.h"
 #include <EEPROM.h>
 
-extern volatile vehicle_config config_global;
+extern volatile VehicleConfig config_global;
 
-void config_global_read(vehicle_config& out);
-void config_global_write(const vehicle_config& in);
+void configGlobalRead(VehicleConfig& out);
+void configGlobalWrite(const VehicleConfig& in);

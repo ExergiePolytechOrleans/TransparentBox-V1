@@ -10,7 +10,7 @@
 #include "data/general_store.h"
 #include "base/router.h"
 
-char *cmd::trim_arg(char *input) {
+char *Cmd::trimArg(char *input) {
   if (input == nullptr) {
     return nullptr;
   }
@@ -33,7 +33,7 @@ char *cmd::trim_arg(char *input) {
   return input;
 }
 
-unsigned short cmd::split_args(char *input, char *argv[], unsigned short max_args) {
+unsigned short Cmd::splitArgs(char *input, char *argv[], unsigned short max_args) {
   unsigned short argc = 0;
   char *p = input;
   char *token_start = input;
@@ -51,7 +51,7 @@ unsigned short cmd::split_args(char *input, char *argv[], unsigned short max_arg
       char separator = *p;
       *p = '\0';
 
-      argv[argc] = trim_arg(token_start);
+      argv[argc] = trimArg(token_start);
       argc++;
 
       if (separator == '\0') {
@@ -67,71 +67,71 @@ unsigned short cmd::split_args(char *input, char *argv[], unsigned short max_arg
   return argc;
 }
 
-cmd::command_id cmd::parse_command_name(const char *input) {
+Cmd::CommandId Cmd::parseCommandName(const char *input) {
   if (input == nullptr) {
-    return CMD_UNKNOWN;
+    return Unknown;
   }
 
   if (strcmp(input, "REBOOT") == 0) {
-    return CMD_REBOOT;
+    return Reboot;
   }
 
   if (strcmp(input, "CFG_DUMP") == 0) {
-    return CMD_CFG_DUMP;
+    return ConfigDump;
   }
 
   if (strcmp(input, "TRACK_PUT") == 0) {
-    return CMD_PUT_TRACK;
+    return PutTrack;
   }
 
   if (strcmp(input, "TRACK_DELETE") == 0) {
-    return CMD_DELETE_TRACK;
+    return DeleteTrack;
   }
 
   if (strcmp(input, "TRACK_DUMP") == 0) {
-    return CMD_DUMP_TRACK;
+    return DumpTrack;
   }
 
   if (strcmp(input, "CFG_RESET") == 0) {
-    return CMD_CFG_RESET;
+    return ConfigReset;
   }
 
   if (strcmp(input, "TRACK_AUTODETECT") == 0) {
-    return CMD_TRACK_AUTODETECT;
+    return TrackAutodetect;
   }
 
   if (strcmp(input, "DISPLAY_GPS_DEBUG") == 0) {
-    return CMD_DISPLAY_GPS_DEBUG;
+    return DisplayGpsDebug;
   }
 
   if (strcmp(input, "DISPLAY_DRIVER_PRIMARY") == 0) {
-    return CMD_DISPLAY_DRIVER_PRIMARY;
+    return DisplayDriverPrimary;
   }
 
   if (strcmp(input, "BATTERY_CAL") == 0) {
-    return CMD_BATTERY_CAL;
+    return BatteryCal;
   }
 
   if (strcmp(input, "BATTERY_PRINT_VBAT") == 0) {
-    return CMD_BATTERY_PRINT_VBAT;
+    return BatteryPrintVbat;
   }
 
   if (strcmp(input, "BATTERY_SET_LOW") == 0) {
-    return CMD_BATTERY_SET_LOW;
+    return BatterySetLow;
   }
 
   if (strcmp(input, "THERMO_SET_LOW") == 0) {
-    return CMD_THERMO_SET_LOW;
+    return ThermoSetLow;
   }
 
   if (strcmp(input, "THERMO_SET_HIGH") == 0) {
-    return CMD_THERMO_SET_HIGH;
+    return ThermoSetHigh;
   }
 
-  return CMD_UNKNOWN;
+  return Unknown;
 }
 
-int cmd::parse_track_slot_id(const char *id_str, unsigned short &id_out) {
+int Cmd::parseTrackSlotId(const char *id_str, unsigned short &id_out) {
   if (id_str == nullptr || id_str[0] == '\0') {
     return 1;
   }
@@ -144,51 +144,51 @@ int cmd::parse_track_slot_id(const char *id_str, unsigned short &id_out) {
   return 0;
 }
 
-int cmd::dump_track_slot(unsigned short id) {
-  vehicle_config cfg;
-  config_global_read(cfg);
-  bool occupied = cfg.track_slot_occupied[id - 1];
+int Cmd::dumpTrackSlot(unsigned short id) {
+  VehicleConfig config;
+  configGlobalRead(config);
+  bool occupied = config.track_slot_occupied_[id - 1];
 
-  track_data track;
-  int res = track_global_read(id, track);
-  if (res != 0) {
+  TrackData track_data;
+  int result = trackGlobalRead(id, track_data);
+  if (result != 0) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("Track slot " + String(id) + " has no valid track data");
+    if (logger_ != nullptr) {
+      logger_->error("Track slot " + String(id) + " has no valid track data");
     }
 #endif
     return 1;
   }
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Track dump for slot " + String(id));
-    _logger->info(String("\tOccupied flag: ") + String(occupied));
-    _logger->info(String("\tID: ") + String(track.id));
-    _logger->info(String("\tName: ") + String(track.name));
-    _logger->info(String("\tPoint A lat: ") + String(track.pt_a.lat, 6));
-    _logger->info(String("\tPoint A lng: ") + String(track.pt_a.lng, 6));
-    _logger->info(String("\tPoint B lat: ") + String(track.pt_b.lat, 6));
-    _logger->info(String("\tPoint B lng: ") + String(track.pt_b.lng, 6));
+  if (logger_ != nullptr) {
+    logger_->info("Track dump for slot " + String(id));
+    logger_->info(String("\tOccupied flag: ") + String(occupied));
+    logger_->info(String("\tID: ") + String(track_data.id_));
+    logger_->info(String("\tName: ") + String(track_data.name_));
+    logger_->info(String("\tPoint A lat: ") + String(track_data.point_a_.lat_, 6));
+    logger_->info(String("\tPoint A lng: ") + String(track_data.point_a_.lng_, 6));
+    logger_->info(String("\tPoint B lat: ") + String(track_data.point_b_.lat_, 6));
+    logger_->info(String("\tPoint B lng: ") + String(track_data.point_b_.lng_, 6));
   }
 #endif
 
   return 0;
 }
 
-int cmd::handle_reboot_command(unsigned short argc) {
+int Cmd::handleRebootCommand(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("REBOOT expects no arguments");
+    if (logger_ != nullptr) {
+      logger_->error("REBOOT expects no arguments");
     }
 #endif
     return 1;
   }
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Rebooting");
+  if (logger_ != nullptr) {
+    logger_->info("Rebooting");
   }
 #endif
   delay(200);
@@ -198,196 +198,196 @@ int cmd::handle_reboot_command(unsigned short argc) {
   return 0;
 }
 
-int cmd::handle_dumpcfg_command(unsigned short argc) {
+int Cmd::handleDumpConfigCommand(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("DUMPCFG expects no arguments");
+    if (logger_ != nullptr) {
+      logger_->error("DUMPCFG expects no arguments");
     }
 #endif
     return 1;
   }
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->dump_config();
+  if (logger_ != nullptr) {
+    logger_->dumpConfig();
   }
 #endif
   return 0;
 }
 
-int cmd::handle_track_put_command(unsigned short argc, char *argv[]) {
+int Cmd::handleTrackPutCommand(unsigned short argc, char *argv[]) {
   if (argc != 7) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("TRACK_PUT expects 6 arguments");
+    if (logger_ != nullptr) {
+      logger_->error("TRACK_PUT expects 6 arguments");
     }
 #endif
     return 1;
   }
 
-  track_data new_track;
-  if (parse_track_slot_id(argv[1], new_track.id) != 0) {
+  TrackData new_track;
+  if (parseTrackSlotId(argv[1], new_track.id_) != 0) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error(String("ID out of range: ") + String(argv[1]));
+    if (logger_ != nullptr) {
+      logger_->error(String("ID out of range: ") + String(argv[1]));
     }
 #endif
     return 1;
   }
 
-  strncpy(new_track.name, argv[2], sizeof(new_track.name) - 1);
-  new_track.name[sizeof(new_track.name) - 1] = '\0';
+  strncpy(new_track.name_, argv[2], sizeof(new_track.name_) - 1);
+  new_track.name_[sizeof(new_track.name_) - 1] = '\0';
 
-  lat_lng pt_a;
-  pt_a.lat = strtod(argv[3], nullptr);
-  pt_a.lng = strtod(argv[4], nullptr);
-  new_track.pt_a = pt_a;
+  LatLng point_a;
+  point_a.lat_ = strtod(argv[3], nullptr);
+  point_a.lng_ = strtod(argv[4], nullptr);
+  new_track.point_a_ = point_a;
 
-  lat_lng pt_b;
-  pt_b.lat = strtod(argv[5], nullptr);
-  pt_b.lng = strtod(argv[6], nullptr);
-  new_track.pt_b = pt_b;
+  LatLng point_b;
+  point_b.lat_ = strtod(argv[5], nullptr);
+  point_b.lng_ = strtod(argv[6], nullptr);
+  new_track.point_b_ = point_b;
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Loading new track");
-    _logger->info(String("ID: ") + String(new_track.id));
-    _logger->info(String("Name: ") + new_track.name);
-    _logger->info(String("Point A lat: ") + String(new_track.pt_a.lat));
-    _logger->info(String("Point A lng: ") + String(new_track.pt_a.lng));
-    _logger->info(String("Point B lat: ") + String(new_track.pt_b.lat));
-    _logger->info(String("Point B lng: ") + String(new_track.pt_b.lng));
+  if (logger_ != nullptr) {
+    logger_->info("Loading new track");
+    logger_->info(String("ID: ") + String(new_track.id_));
+    logger_->info(String("Name: ") + new_track.name_);
+    logger_->info(String("Point A lat: ") + String(new_track.point_a_.lat_));
+    logger_->info(String("Point A lng: ") + String(new_track.point_a_.lng_));
+    logger_->info(String("Point B lat: ") + String(new_track.point_b_.lat_));
+    logger_->info(String("Point B lng: ") + String(new_track.point_b_.lng_));
   }
 #endif
 
-  track_temp_global_write(new_track);
-  return router::send(MOD_CFG, TASK_CONFIG_WRITE_TEMP_TRACK);
+  trackTempGlobalWrite(new_track);
+  return router::send(module::Config, task::ConfigWriteTempTrack);
 }
 
-int cmd::handle_track_delete_command(unsigned short argc, char *argv[]) {
+int Cmd::handleTrackDeleteCommand(unsigned short argc, char *argv[]) {
   if (argc != 2) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("TRACK_DELETE expects 1 argument");
+    if (logger_ != nullptr) {
+      logger_->error("TRACK_DELETE expects 1 argument");
     }
 #endif
     return 1;
   }
 
   unsigned short id;
-  if (parse_track_slot_id(argv[1], id) != 0) {
+  if (parseTrackSlotId(argv[1], id) != 0) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error(String("ID out of range: ") + String(argv[1]));
+    if (logger_ != nullptr) {
+      logger_->error(String("ID out of range: ") + String(argv[1]));
     }
 #endif
     return 1;
   }
 
-  return router::send(MOD_CFG, TASK_CONFIG_TRACK_DELETE, id);
+  return router::send(module::Config, task::ConfigTrackDelete, id);
 }
 
-int cmd::handle_track_dump_command(unsigned short argc, char *argv[]) {
+int Cmd::handleTrackDumpCommand(unsigned short argc, char *argv[]) {
   if (argc != 2) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("TRACK_DUMP expects 1 argument");
+    if (logger_ != nullptr) {
+      logger_->error("TRACK_DUMP expects 1 argument");
     }
 #endif
     return 1;
   }
 
   unsigned short id;
-  if (parse_track_slot_id(argv[1], id) != 0) {
+  if (parseTrackSlotId(argv[1], id) != 0) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error(String("ID out of range: ") + String(argv[1]));
+    if (logger_ != nullptr) {
+      logger_->error(String("ID out of range: ") + String(argv[1]));
     }
 #endif
     return 1;
   }
 
-  return this->dump_track_slot(id);
+  return this->dumpTrackSlot(id);
 }
 
-int cmd::handle_cfg_reset_command(unsigned short argc) {
+int Cmd::handleConfigResetCommand(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("CFG_RESET expects no arguments");
+    if (logger_ != nullptr) {
+      logger_->error("CFG_RESET expects no arguments");
     }
 #endif
     return 1;
   }
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Resetting config");
+  if (logger_ != nullptr) {
+    logger_->info("Resetting config");
   }
 #endif
-  return router::send(MOD_CFG, TASK_CONFIG_CFG_RESET);
+  return router::send(module::Config, task::ConfigReset);
 }
 
-int cmd::handle_track_autodetect_command(unsigned short argc) {
+int Cmd::handleTrackAutodetectCommand(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("TRACK_AUTODETECT expects no arguments");
+    if (logger_ != nullptr) {
+      logger_->error("TRACK_AUTODETECT expects no arguments");
     }
 #endif
     return 1;
   }
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Detecting track");
+  if (logger_ != nullptr) {
+    logger_->info("Detecting track");
   }
 #endif
-  return router::send(MOD_CFG, TASK_CONFIG_TRACK_DETECT, 1);
+  return router::send(module::Config, task::ConfigTrackDetect, 1);
 }
 
-int cmd::handle_display_gps_debug(unsigned short argc) {
+int Cmd::handleDisplayGpsDebug(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("DISPLAY_GPS_DEBUG expects no arguments");
+    if (logger_ != nullptr) {
+      logger_->error("DISPLAY_GPS_DEBUG expects no arguments");
     }
 #endif
     return 1;
   }
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Switching to GPS_DEBUG display");
+  if (logger_ != nullptr) {
+    logger_->info("Switching to GPS_DEBUG display");
   }
 #endif
-  return router::send(MOD_LCD, TASK_DISPLAY_GPS_DEBUG);
+  return router::send(module::Lcd, task::DisplayGpsDebug);
 }
 
-int cmd::handle_display_driver_primary(unsigned short argc) {
+int Cmd::handleDisplayDriverPrimary(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("DISPLAY_DRIVER_PRIMARY expects no arguments");
+    if (logger_ != nullptr) {
+      logger_->error("DISPLAY_DRIVER_PRIMARY expects no arguments");
     }
 #endif
     return 1;
   }
 
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Switching to DRIVER_PRIMARY display");
+  if (logger_ != nullptr) {
+    logger_->info("Switching to DRIVER_PRIMARY display");
   }
 #endif
-  return router::send(MOD_LCD, TASK_DISPLAY_DRIVER_PRIMARY);
+  return router::send(module::Lcd, task::DisplayDriverPrimary);
 }
 
-int cmd::handle_battery_cal(unsigned short argc, char *argv[]) {
+int Cmd::handleBatteryCal(unsigned short argc, char *argv[]) {
   if (argc != 2) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("BATTERY_CAL expects 1 argument");
+    if (logger_ != nullptr) {
+      logger_->error("BATTERY_CAL expects 1 argument");
     }
 #endif
     return 1;
@@ -396,19 +396,19 @@ int cmd::handle_battery_cal(unsigned short argc, char *argv[]) {
   uint32_t task_data;
   memcpy(&task_data, &vbat, sizeof(uint32_t));
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Calibrating VBAT");
+  if (logger_ != nullptr) {
+    logger_->info("Calibrating VBAT");
   }
 #endif
-  router::send(MOD_BAT, TASK_BATTERY_CAL, task_data);
+  router::send(module::Battery, task::BatteryCal, task_data);
   return 0;
 }
 
-int cmd::handle_battery_print_vbat(unsigned short argc) {
+int Cmd::handleBatteryPrintVbat(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("BATTERY_PRINT_VBAT expects no arguments");
+    if (logger_ != nullptr) {
+      logger_->error("BATTERY_PRINT_VBAT expects no arguments");
     }
 #endif
     return 1;
@@ -416,18 +416,19 @@ int cmd::handle_battery_print_vbat(unsigned short argc) {
 
 #ifdef INFO
   double vbat;
-  vbat_global_read(vbat);
-  if (_logger != nullptr) {
-    _logger->info("VBAT: " + String(vbat));
+  vbatGlobalRead(vbat);
+  if (logger_ != nullptr) {
+    logger_->info("VBAT: " + String(vbat));
   }
 #endif
+  return 0;
 }
 
-int cmd::handle_battery_set_low(unsigned short argc, char* argv[]) {
+int Cmd::handleBatterySetLow(unsigned short argc, char* argv[]) {
   if (argc != 2) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("BATTERY_SET_LOW expects 1 argument");
+    if (logger_ != nullptr) {
+      logger_->error("BATTERY_SET_LOW expects 1 argument");
     }
 #endif
     return 1;
@@ -436,19 +437,19 @@ int cmd::handle_battery_set_low(unsigned short argc, char* argv[]) {
   uint32_t task_data;
   memcpy(&task_data, &low, sizeof(uint32_t));
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Setting warning level for VBAT");
+  if (logger_ != nullptr) {
+    logger_->info("Setting warning level for VBAT");
   }
 #endif
-  router::send(MOD_CFG, TASK_CONFIG_VBAT_SET_LOW, task_data);
+  router::send(module::Config, task::ConfigVbatSetLow, task_data);
   return 0;
 }
 
-int cmd::handle_thermo_set_low(unsigned short argc, char* argv[]) {
+int Cmd::handleThermoSetLow(unsigned short argc, char* argv[]) {
   if (argc != 2) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("THERMO_SET_LOW expects 1 argument");
+    if (logger_ != nullptr) {
+      logger_->error("THERMO_SET_LOW expects 1 argument");
     }
 #endif
     return 1;
@@ -457,19 +458,19 @@ int cmd::handle_thermo_set_low(unsigned short argc, char* argv[]) {
   uint32_t task_data;
   memcpy(&task_data, &low, sizeof(uint32_t));
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Setting low level for TENG");
+  if (logger_ != nullptr) {
+    logger_->info("Setting low level for TENG");
   }
 #endif
-  router::send(MOD_CFG, TASK_CONFIG_TENG_SET_LOW, task_data);
+  router::send(module::Config, task::ConfigTengSetLow, task_data);
   return 0;
 }
 
-int cmd::handle_thermo_set_high(unsigned short argc, char* argv[]) {
+int Cmd::handleThermoSetHigh(unsigned short argc, char* argv[]) {
   if (argc != 2) {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("THERMO_SET_HIGH expects 1 argument");
+    if (logger_ != nullptr) {
+      logger_->error("THERMO_SET_HIGH expects 1 argument");
     }
 #endif
     return 1;
@@ -478,156 +479,156 @@ int cmd::handle_thermo_set_high(unsigned short argc, char* argv[]) {
   uint32_t task_data;
   memcpy(&task_data, &low, sizeof(uint32_t));
 #ifdef INFO
-  if (_logger != nullptr) {
-    _logger->info("Setting high level for TENG");
+  if (logger_ != nullptr) {
+    logger_->info("Setting high level for TENG");
   }
 #endif
-  router::send(MOD_CFG, TASK_CONFIG_TENG_SET_LOW, task_data);
+  router::send(module::Config, task::ConfigTengSetLow, task_data);
   return 0;
 }
 
-int cmd::handle_unknown_command(unsigned short argc, char *argv[]) {
+int Cmd::handleUnknownCommand(unsigned short argc, char *argv[]) {
 #ifdef ERROR
-  if (_logger != nullptr) {
+  if (logger_ != nullptr) {
     if (argc > 0 && argv != nullptr && argv[0] != nullptr && argv[0][0] != '\0') {
-      _logger->error(String("Unknown command: ") + String(argv[0]));
+      logger_->error(String("Unknown command: ") + String(argv[0]));
     } else {
-      _logger->error("Unknown command");
+      logger_->error("Unknown command");
     }
   }
 #endif
   return 1;
 }
 
-int cmd::dispatch_command(command_id command, unsigned short argc, char *argv[]) {
+int Cmd::dispatchCommand(CommandId command, unsigned short argc, char *argv[]) {
   switch (command) {
-    case CMD_REBOOT:
-      return this->handle_reboot_command(argc);
+    case Reboot:
+      return this->handleRebootCommand(argc);
 
-    case CMD_CFG_DUMP:
-      return this->handle_dumpcfg_command(argc);
+    case ConfigDump:
+      return this->handleDumpConfigCommand(argc);
 
-    case CMD_PUT_TRACK:
-      return this->handle_track_put_command(argc, argv);
+    case PutTrack:
+      return this->handleTrackPutCommand(argc, argv);
 
-    case CMD_DELETE_TRACK:
-      return this->handle_track_delete_command(argc, argv);
+    case DeleteTrack:
+      return this->handleTrackDeleteCommand(argc, argv);
 
-    case CMD_DUMP_TRACK:
-      return this->handle_track_dump_command(argc, argv);
+    case DumpTrack:
+      return this->handleTrackDumpCommand(argc, argv);
 
-    case CMD_CFG_RESET:
-      return this->handle_cfg_reset_command(argc);
+    case ConfigReset:
+      return this->handleConfigResetCommand(argc);
       
-    case CMD_TRACK_AUTODETECT:
-      return this->handle_track_autodetect_command(argc);
+    case TrackAutodetect:
+      return this->handleTrackAutodetectCommand(argc);
       
-    case CMD_DISPLAY_GPS_DEBUG:
-      return this->handle_display_gps_debug(argc);
+    case DisplayGpsDebug:
+      return this->handleDisplayGpsDebug(argc);
       
-    case CMD_DISPLAY_DRIVER_PRIMARY:
-      return this->handle_display_driver_primary(argc);
+    case DisplayDriverPrimary:
+      return this->handleDisplayDriverPrimary(argc);
       
-    case CMD_BATTERY_CAL:
-      return this->handle_battery_cal(argc, argv);
+    case BatteryCal:
+      return this->handleBatteryCal(argc, argv);
       
-    case CMD_BATTERY_PRINT_VBAT:
-      return this->handle_battery_print_vbat(argc);
+    case BatteryPrintVbat:
+      return this->handleBatteryPrintVbat(argc);
       
-    case CMD_BATTERY_SET_LOW:
-      return this->handle_battery_set_low(argc, argv);
+    case BatterySetLow:
+      return this->handleBatterySetLow(argc, argv);
 
-    case CMD_THERMO_SET_LOW:
-      return this->handle_thermo_set_low(argc, argv);
+    case ThermoSetLow:
+      return this->handleThermoSetLow(argc, argv);
 
-    case CMD_THERMO_SET_HIGH:
-      return this->handle_thermo_set_high(argc, argv);
+    case ThermoSetHigh:
+      return this->handleThermoSetHigh(argc, argv);
 
-    case CMD_UNKNOWN:
+    case Unknown:
     default:
-      return this->handle_unknown_command(argc, argv);
+      return this->handleUnknownCommand(argc, argv);
   }
 }
 
-int cmd::try_parse() {
+int Cmd::tryParse() {
 #ifdef DEBUG
-  if (_logger != nullptr) {
-    _logger->debug("Attempting to parse command");
+  if (logger_ != nullptr) {
+    logger_->debug("Attempting to parse command");
   }
 #endif
 
-  char *argvp[_max_args];
-  unsigned short argc = split_args(_buffer, argvp, _max_args);
+  char *argvp[MAX_ARGS];
+  unsigned short argc = splitArgs(buffer_, argvp, MAX_ARGS);
 
   if (argc == 0 || argvp[0] == nullptr || argvp[0][0] == '\0') {
 #ifdef ERROR
-    if (_logger != nullptr) {
-      _logger->error("Empty command");
+    if (logger_ != nullptr) {
+      logger_->error("Empty command");
     }
 #endif
     return 1;
   }
 
-  command_id command = parse_command_name(argvp[0]);
-  return dispatch_command(command, argc, argvp);
+  CommandId command = parseCommandName(argvp[0]);
+  return dispatchCommand(command, argc, argvp);
 }
 
-int cmd::push(const Task &task) {
-  return _queue.push(task);
+int Cmd::push(const Task &task) {
+  return queue_.push(task);
 }
 
-cmd::cmd(HardwareSerial *data_stream)
-    : _data_stream(data_stream), _logger(nullptr) {}
+Cmd::Cmd(HardwareSerial *data_stream)
+    : data_stream_(data_stream), logger_(nullptr) {}
 
-cmd::cmd(HardwareSerial *data_stream, system_logger *logger)
-    : _data_stream(data_stream), _logger(logger) {}
+Cmd::Cmd(HardwareSerial *data_stream, SystemLogger *logger)
+    : data_stream_(data_stream), logger_(logger) {}
 
-cmd::~cmd() {}
+Cmd::~Cmd() {}
 
-int cmd::init() {
-  _data_stream->begin(_baud_rate);
+int Cmd::init() {
+  data_stream_->begin(baud_rate_);
   return 0;
 }
 
-int cmd::parse_task(unsigned long timeout_ms) {
+int Cmd::parseTask(unsigned long timeout_ms) {
   unsigned long start = millis();
 
-  while (_data_stream->available()) {
+  while (data_stream_->available()) {
     if ((unsigned long)(millis() - start) >= timeout_ms) {
       return 1;
     }
 
-    char c = _data_stream->read();
+    char current_char = data_stream_->read();
 
-    if (c == '<') {
-      _buf_open = true;
-      _idx = 0;
+    if (current_char == '<') {
+      buffer_open_ = true;
+      index_ = 0;
       continue;
     }
 
-    if (!_buf_open) {
+    if (!buffer_open_) {
       continue;
     }
 
-    if (c == '>') {
-      _buffer[_idx] = '\0';
-      _buf_open = false;
-      return this->try_parse();
+    if (current_char == '>') {
+      buffer_[index_] = '\0';
+      buffer_open_ = false;
+      return this->tryParse();
     }
 
-    if (_idx >= sizeof(_buffer) - 1) {
-      _buf_open = false;
-      _idx = 0;
+    if (index_ >= sizeof(buffer_) - 1) {
+      buffer_open_ = false;
+      index_ = 0;
 #ifdef ERROR
-      if (_logger != nullptr) {
-        _logger->error("Command parser buffer overflow");
+      if (logger_ != nullptr) {
+        logger_->error("Command parser buffer overflow");
       }
 #endif
       return 1;
     }
 
-    _buffer[_idx] = c;
-    _idx++;
+    buffer_[index_] = current_char;
+    index_++;
   }
 
   return 0;

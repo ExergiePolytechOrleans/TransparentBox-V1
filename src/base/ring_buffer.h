@@ -5,34 +5,34 @@
 #include <inttypes.h>
 
 template<typename T, uint8_t SIZE>
-class ring_buffer {
+class RingBuffer {
     private:
-        T _buffer[SIZE];
-        volatile uint8_t _head = 0;
-        volatile uint8_t _tail = 0;
-        volatile uint8_t _count = 0;
+        T buffer_[SIZE];
+        volatile uint8_t head_ = 0;
+        volatile uint8_t tail_ = 0;
+        volatile uint8_t count_ = 0;
     public:
         int push(const T& item) {
-            if (_count == SIZE) {
+            if (count_ == SIZE) {
                 return 1;
             }
             
-            _buffer[_head] = item;
-            _head = (_head++) % SIZE;
-            _count++;
+            buffer_[head_] = item;
+            head_ = (head_++) % SIZE;
+            count_++;
             return 0;
         }
         int pop(T& item) {
-            if (_count == 0) {
+            if (count_ == 0) {
                 return 1;
             }
             
-            item = _buffer[_tail];
-            _tail = (_tail++) % SIZE;
-            _count--;
+            item = buffer_[tail_];
+            tail_ = (tail_++) % SIZE;
+            count_--;
             return 0;
         }
-        bool is_empty() const { return _count == 0;}
-        bool is_full() const { return _count == SIZE;}
-        uint8_t size() const { return _count;}
+        bool isEmpty() const { return count_ == 0; }
+        bool isFull() const { return count_ == SIZE; }
+        uint8_t size() const { return count_; }
 };

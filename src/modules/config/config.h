@@ -15,50 +15,50 @@
 #include "data/eeprom_layout.h"
 #include "base/router.h"
 
-struct task_config_track_detect_data {
-  unsigned short last_checked = 0;
-  unsigned short smallest_idx = 0;
-  double cos;
-  double sqdiff = 0;
-  double gps_lat;
-  double gps_lng;
+struct TaskConfigTrackDetectData {
+  unsigned short last_checked_ = 0;
+  unsigned short smallest_idx_ = 0;
+  double cos_ = 0;
+  double sqdiff_ = 0;
+  double gps_lat_ = 0;
+  double gps_lng_ = 0;
 };
 
-class config : public module_base {
+class Config : public ModuleBase {
 private:
-  vehicle_config _config;
-  system_logger *_logger;
-  bool _valid_config;
-  track_data _loaded_track;
-  bool _is_track_loaded = false;
-  ring_buffer<Task, 16> _queue;
-  Task _active_task = {};
-  uint8_t _task_memory[64] = {};
-  bool _task_memory_stale = true;
-  bool _no_tracks_notice_shown = false;
+  VehicleConfig config_;
+  SystemLogger *logger_;
+  bool valid_config_;
+  TrackData loaded_track_;
+  bool is_track_loaded_ = false;
+  RingBuffer<Task, 16> queue_;
+  Task active_task_ = {};
+  uint8_t task_memory_[64] = {};
+  bool task_memory_stale_ = true;
+  bool no_tracks_notice_shown_ = false;
 
-  int read_cfg();
-  int write_cfg();
-  int write_cfg(const vehicle_config &new_config);
-  int handle_active_task(unsigned long timeout_ms);
-  int task_config_detect_track(unsigned long timeout_ms);
-  int task_complete();
-  int write_track(const track_data& in);
-  int write_track_from_temp();
-  int delete_track(unsigned short idx);
-  int reset_cfg();
-  int write_vbat_cal(double val);
-  int write_vbat_low(double val);
-  int write_teng_low(double val);
-  int write_teng_high(double val);
+  int readConfig();
+  int writeConfig();
+  int writeConfig(const VehicleConfig &new_config);
+  int handleActiveTask(unsigned long timeout_ms);
+  int taskConfigDetectTrack(unsigned long timeout_ms);
+  int taskComplete();
+  int writeTrack(const TrackData& track_data);
+  int writeTrackFromTemp();
+  int deleteTrack(unsigned short idx);
+  int resetConfig();
+  int writeVbatCal(double value);
+  int writeVbatLow(double value);
+  int writeTengLow(double value);
+  int writeTengHigh(double value);
 
 public:
   int push(const Task &task) override;
-  config();
-  config(system_logger *logger);
-  ~config();
-  int auto_init();
+  Config();
+  Config(SystemLogger *logger);
+  ~Config();
+  int autoInit();
   int loop(unsigned long timeout_ms = 500);
-  int get_track(unsigned int idx, track_data &t);
-  int load_track(unsigned int idx);
+  int getTrack(unsigned int idx, TrackData &track_data);
+  int loadTrack(unsigned int idx);
 };

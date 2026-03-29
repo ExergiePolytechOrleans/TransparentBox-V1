@@ -5,46 +5,53 @@
 #include <inttypes.h>
 #include <Arduino.h>
 
-enum module_id : uint8_t {
-    // modules/cmd
-    MOD_CMD,
-    // modules/config
-    MOD_CFG,
-    // modules/gps
-    MOD_GPS,
-    // modules/lcd
-    MOD_LCD,
-    // modules/battery
-    MOD_BAT,
-    // modules/thermocouple
-    MOD_THC,
-    MOD_COUNT,
-    MOD_NULL,
-    MOD_ALL,
+namespace module {
+
+enum Id : uint8_t {
+    Cmd,
+    Config,
+    Gps,
+    Lcd,
+    Battery,
+    Thermocouple,
+    Count,
+    Null,
+    All,
 };
 
-enum task_type : uint8_t {
-    TASK_NULL,
-    TASK_DISPLAY_GPS_DEBUG,
-    TASK_DISPLAY_DRIVER_PRIMARY,
-    TASK_DISPLAY_MSG_GPS_FIX,
-    TASK_DISPLAY_MSG_TRACK_DETECT_OK,
-    TASK_DISPLAY_MSG_CONFIG_NO_TRACKS,
-    TASK_DISPLAY_MSG_BAT_LOW,
-    TASK_CONFIG_TRACK_DETECT,
-    TASK_CONFIG_WRITE_TEMP_TRACK,
-    TASK_CONFIG_TRACK_DELETE,
-    TASK_CONFIG_CFG_RESET,
-    TASK_CONFIG_VBAT_CAL_SET,
-    TASK_CONFIG_VBAT_SET_LOW,
-    TASK_CONFIG_TENG_SET_LOW,
-    TASK_CONFIG_TENG_SET_HIGH,
-    TASK_BATTERY_CAL,
-    TASK_ALL_CONFIG_UPDATED,
+} // namespace module
+
+namespace task {
+
+enum Type : uint8_t {
+    Null,
+    DisplayGpsDebug,
+    DisplayDriverPrimary,
+    DisplayMsgGpsFix,
+    DisplayMsgTrackDetectOk,
+    DisplayMsgConfigNoTracks,
+    DisplayMsgBatteryLow,
+    ConfigTrackDetect,
+    ConfigWriteTempTrack,
+    ConfigTrackDelete,
+    ConfigReset,
+    ConfigVbatCalSet,
+    ConfigVbatSetLow,
+    ConfigTengSetLow,
+    ConfigTengSetHigh,
+    BatteryCal,
+    AllConfigUpdated,
 };
+
+} // namespace task
 
 struct Task {
-    module_id target;
-    task_type type;
-    uint32_t data;
+    Task(module::Id target = module::Null,
+         task::Type type = task::Null,
+         uint32_t data = 0)
+        : target_(target), type_(type), data_(data) {}
+
+    module::Id target_;
+    task::Type type_;
+    uint32_t data_;
 };
