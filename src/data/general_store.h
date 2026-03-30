@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-extern volatile double vbat_global;
-extern volatile double teng_global;
+extern volatile float vbat_global;
+extern volatile float teng_global;
 
-void vbatGlobalRead(double& out);
-void vbatGlobalWrite(const double& in);
+void vbatGlobalRead(float& out);
+void vbatGlobalWrite(const float& in);
 
-void tengGlobalRead(double& out);
-void tengGlobalWrite(const double& in);
+void tengGlobalRead(float& out);
+void tengGlobalWrite(const float& in);

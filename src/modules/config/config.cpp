@@ -99,22 +99,22 @@ int Config::resetConfig() {
   return this->writeConfig();
 }
 
-int Config::writeVbatCal(double value) {
+int Config::writeVbatCal(float value) {
   config_.vbat_calibration_ = value;
   return this->writeConfig();
 }
 
-int Config::writeVbatLow(double value) {
+int Config::writeVbatLow(float value) {
   config_.vbat_low_ = value;
   return this->writeConfig();
 }
 
-int Config::writeTengLow(double value) {
+int Config::writeTengLow(float value) {
   config_.teng_low_ = value;
   return this->writeConfig();
 }
 
-int Config::writeTengHigh(double value) {
+int Config::writeTengHigh(float value) {
   config_.teng_high_ = value;
   return this->writeConfig();
 }
@@ -188,9 +188,9 @@ int Config::taskConfigDetectTrack(unsigned long timeout_ms) {
     TrackData track_data;
     int result = this->getTrack(task_data.last_checked_, track_data);
     if (result == 0) {
-      double delta_lat = track_data.point_a_.lat_ - task_data.gps_lat_;
-      double delta_lng = (track_data.point_a_.lng_ - task_data.gps_lng_) * task_data.cos_;
-      double dist2 = delta_lat * delta_lat + delta_lng * delta_lng;
+      float delta_lat = track_data.point_a_.lat_ - task_data.gps_lat_;
+      float delta_lng = (track_data.point_a_.lng_ - task_data.gps_lng_) * task_data.cos_;
+      float dist2 = delta_lat * delta_lat + delta_lng * delta_lng;
 
       if (dist2 < task_data.sqdiff_ || task_data.smallest_idx_ == 0) {
         task_data.smallest_idx_ = task_data.last_checked_;
@@ -255,32 +255,32 @@ int Config::handleActiveTask(unsigned long timeout_ms) {
   }
 
   case task::ConfigVbatCalSet: {
-    double cal_value;
-    memcpy(&cal_value, &active_task_.data_, sizeof(double));
+    float cal_value;
+    memcpy(&cal_value, &active_task_.data_, sizeof(float));
     int result = this->writeVbatCal(cal_value);
     this->taskComplete();
     return result;
   }
 
   case task::ConfigVbatSetLow: {
-    double low_value;
-    memcpy(&low_value, &active_task_.data_, sizeof(double));
+    float low_value;
+    memcpy(&low_value, &active_task_.data_, sizeof(float));
     int result = this->writeVbatLow(low_value);
     this->taskComplete();
     return result;
   }
 
   case task::ConfigTengSetLow: {
-    double low_value;
-    memcpy(&low_value, &active_task_.data_, sizeof(double));
+    float low_value;
+    memcpy(&low_value, &active_task_.data_, sizeof(float));
     int result = this->writeTengLow(low_value);
     this->taskComplete();
     return result;
   }
 
   case task::ConfigTengSetHigh: {
-    double high_value;
-    memcpy(&high_value, &active_task_.data_, sizeof(double));
+    float high_value;
+    memcpy(&high_value, &active_task_.data_, sizeof(float));
     int result = this->writeTengHigh(high_value);
     this->taskComplete();
     return result;

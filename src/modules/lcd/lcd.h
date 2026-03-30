@@ -53,7 +53,7 @@ private:
   void print(const String &msg);
   void print(char c);
   void print(const char c[]);
-  void print(double d, int digits = 2);
+  void print(float d, int digits = 2);
   void print(unsigned long l, int base = 10);
   void print(long l, int base = 10);
   void print(unsigned int i, int base = 10);

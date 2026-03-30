@@ -12,15 +12,15 @@ struct VehicleConfig {
     bool auto_detect_track_ = true;
     uint8_t track_fallback_ = 0;
     bool track_slot_occupied_[8] = {false};
-    double vbat_calibration_ = 0;
-    double vbat_low_ = 0;
-    double teng_low_ = 0;
-    double teng_high_ = 0;
+    float vbat_calibration_ = 0;
+    float vbat_low_ = 0;
+    float teng_low_ = 0;
+    float teng_high_ = 0;
 };
 
 struct LatLng {
-    double lat_;
-    double lng_;
+    float lat_;
+    float lng_;
 };
 
 struct TrackData {
@@ -34,7 +34,7 @@ struct TrackData {
 struct GpsSubData {
     uint32_t age_;
     bool valid_;
-    double value_;
+    float value_;
 };
 
 struct GpsData {

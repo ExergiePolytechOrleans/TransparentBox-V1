@@ -8,10 +8,10 @@
 #include "data/general_store.h"
 
 int Battery::calibrate(const Task &task) {
-  double actual_voltage;
-  memcpy(&actual_voltage, &task.data_, sizeof(double));
+  float actual_voltage;
+  memcpy(&actual_voltage, &task.data_, sizeof(float));
   int adc_read = analogRead(VBAT_PIN);
-  double cal_factor = actual_voltage / adc_read;
+  float cal_factor = actual_voltage / adc_read;
   uint32_t output_val;
   memcpy(&output_val, &cal_factor, sizeof(uint32_t));
   router::send(module::Config, task::ConfigVbatCalSet, output_val);

@@ -18,10 +18,10 @@
 struct TaskConfigTrackDetectData {
   unsigned short last_checked_ = 0;
   unsigned short smallest_idx_ = 0;
-  double cos_ = 0;
-  double sqdiff_ = 0;
-  double gps_lat_ = 0;
-  double gps_lng_ = 0;
+  float cos_ = 0;
+  float sqdiff_ = 0;
+  float gps_lat_ = 0;
+  float gps_lng_ = 0;
 };
 
 class Config : public ModuleBase {
@@ -47,10 +47,10 @@ private:
   int writeTrackFromTemp();
   int deleteTrack(unsigned short idx);
   int resetConfig();
-  int writeVbatCal(double value);
-  int writeVbatLow(double value);
-  int writeTengLow(double value);
-  int writeTengHigh(double value);
+  int writeVbatCal(float value);
+  int writeVbatLow(float value);
+  int writeTengLow(float value);
+  int writeTengHigh(float value);
 
 public:
   int push(const Task &task) override;

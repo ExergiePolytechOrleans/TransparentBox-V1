@@ -31,7 +31,7 @@ void Lcd::print(const char c[]) {
   display_cleared_ = false;
 }
 
-void Lcd::print(double d, int digits) {
+void Lcd::print(float d, int digits) {
   display_->print(d, digits);
   display_cleared_ = false;
 }
@@ -151,9 +151,9 @@ int Lcd::renderDriverPrimary() {
   GpsData gps_data;
   gpsGlobalRead(gps_data);
   
-  double vbat;
+  float vbat;
   vbatGlobalRead(vbat);
-  double teng;
+  float teng;
   tengGlobalRead(teng);
 
   display_->setCursor(0,0);

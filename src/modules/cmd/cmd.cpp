@@ -392,7 +392,7 @@ int Cmd::handleBatteryCal(unsigned short argc, char *argv[]) {
 #endif
     return 1;
   }
-  double vbat = strtod(argv[1], nullptr);
+  float vbat = strtod(argv[1], nullptr);
   uint32_t task_data;
   memcpy(&task_data, &vbat, sizeof(uint32_t));
 #ifdef INFO
@@ -415,7 +415,7 @@ int Cmd::handleBatteryPrintVbat(unsigned short argc) {
   }
 
 #ifdef INFO
-  double vbat;
+  float vbat;
   vbatGlobalRead(vbat);
   if (logger_ != nullptr) {
     logger_->info("VBAT: " + String(vbat));
@@ -433,7 +433,7 @@ int Cmd::handleBatterySetLow(unsigned short argc, char* argv[]) {
 #endif
     return 1;
   }
-  double low = strtod(argv[1], nullptr);
+  float low = strtod(argv[1], nullptr);
   uint32_t task_data;
   memcpy(&task_data, &low, sizeof(uint32_t));
 #ifdef INFO
@@ -454,7 +454,7 @@ int Cmd::handleThermoSetLow(unsigned short argc, char* argv[]) {
 #endif
     return 1;
   }
-  double low = strtod(argv[1], nullptr);
+  float low = strtod(argv[1], nullptr);
   uint32_t task_data;
   memcpy(&task_data, &low, sizeof(uint32_t));
 #ifdef INFO
@@ -475,7 +475,7 @@ int Cmd::handleThermoSetHigh(unsigned short argc, char* argv[]) {
 #endif
     return 1;
   }
-  double low = strtod(argv[1], nullptr);
+  float low = strtod(argv[1], nullptr);
   uint32_t task_data;
   memcpy(&task_data, &low, sizeof(uint32_t));
 #ifdef INFO

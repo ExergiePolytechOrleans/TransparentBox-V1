@@ -14,9 +14,9 @@ class Battery : public ModuleBase {
 private:
   SystemLogger *logger_;
   RingBuffer<Task, 16> queue_;
-  double vbat_ = 0;
-  double calibration_ = 0;
-  double low_threshold_ = 0;
+  float vbat_ = 0;
+  float calibration_ = 0;
+  float low_threshold_ = 0;
   unsigned long warning_sent_at_ = 0;
   unsigned long warning_timeout_ = 10000;
   unsigned long update_interval_ = 1000;

@@ -14,6 +14,7 @@ enum Id : uint8_t {
     Lcd,
     Battery,
     Thermocouple,
+    Telemetry,
     Count,
     Null,
     All,
