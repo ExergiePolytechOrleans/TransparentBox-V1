@@ -15,9 +15,9 @@
  }
 
  void tengGlobalRead(double& out) {
-     out = vbat_global;
+     out = teng_global;
  }
 
  void tengGlobalWrite(const double& in) {
-     vbat_global = in;
+     teng_global = in;
  }

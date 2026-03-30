@@ -18,8 +18,12 @@ private:
   RingBuffer<Task, 16> queue_;
   MAX6675 *thermocouple_;
   double temperature_;
+  double low_;
+  double high_;
   unsigned long update_interval_ = 1000;
   unsigned long last_read_at_ = 0;
+  unsigned long warning_sent_at_ = 0;
+  unsigned long warning_timeout_ = 10000;
 
 public:
   int push(const Task &task) override;

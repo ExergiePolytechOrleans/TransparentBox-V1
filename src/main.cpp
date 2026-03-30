@@ -14,6 +14,7 @@
 #include "base/module_base.h"
 #include "base/router.h"
 #include "modules/battery/battery.h"
+#include "modules/thermocouple/thermocouple.h"
 
 
 SystemLogger *logger = new SystemLogger(&Serial);
@@ -23,6 +24,8 @@ Gps *gps_module = new Gps(&Serial2, logger);
 Config *system_config = new Config(logger);
 Cmd *command_handler = new Cmd(&Serial, logger);
 Battery *battery_module = new Battery(logger);
+Thermocouple *thermocouple_module = new Thermocouple(logger);
+
 
 
 void setup() {
@@ -33,6 +36,7 @@ void setup() {
   module_registry[module::Config] = system_config;
   module_registry[module::Cmd] = command_handler;
   module_registry[module::Battery] = battery_module;
+  module_registry[module::Thermocouple] = thermocouple_module;
 
   display->init();
   display->printMessage("Starting Initialization");
@@ -62,6 +66,7 @@ void setup() {
 
   display->printMessage("Sensors Init...");
   battery_module->init();
+  thermocouple_module->init();
   delay(1000);
   display->printMessage("Sensors Init Complete");
   delay(1000);
@@ -74,4 +79,5 @@ void loop() {
   command_handler->parseTask();
   system_config->loop();
   battery_module->loop();
+  thermocouple_module->loop();
 }

@@ -44,10 +44,11 @@ int Battery::loop(unsigned long timeout_ms) {
 
     vbatGlobalWrite(vbat_);
     if (vbat_ < low_threshold_) {
-        if (warning_sent_at_ == 0 || millis() > warning_sent_at_ + warning_timeout_) {
-            router::send(module::Lcd, task::DisplayMsgBatteryLow, 2000);
-            warning_sent_at_ = millis();
-        }
+      if (warning_sent_at_ == 0 ||
+          millis() > warning_sent_at_ + warning_timeout_) {
+        router::send(module::Lcd, task::DisplayMsgBatteryLow, 2000);
+        warning_sent_at_ = millis();
+      }
     }
     last_read_at_ = millis();
   }
@@ -66,19 +67,18 @@ int Battery::loop(unsigned long timeout_ms) {
         break;
       }
     } else if (active_task.target_ == module::All) {
-        switch (active_task.type_)
-        {
-        case task::AllConfigUpdated: {
-            VehicleConfig config; 
-            configGlobalRead(config);
-            calibration_ = config.vbat_calibration_;
-            low_threshold_ = config.vbat_low_;
-            break;
-        }
-        
-        default:
-            break;
-        }
+      switch (active_task.type_) {
+      case task::AllConfigUpdated: {
+        VehicleConfig config;
+        configGlobalRead(config);
+        calibration_ = config.vbat_calibration_;
+        low_threshold_ = config.vbat_low_;
+        break;
+      }
+
+      default:
+        break;
+      }
     }
   }
   return 0;

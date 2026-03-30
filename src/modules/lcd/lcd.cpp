@@ -62,6 +62,8 @@ bool Lcd::isMessageTask(task::Type type) {
     case task::DisplayMsgTrackDetectOk:
     case task::DisplayMsgConfigNoTracks:
     case task::DisplayMsgBatteryLow:
+    case task::DisplayMsgEngineTempLow:
+    case task::DisplayMsgEngineTempHigh:
       return true;
 
     default:
@@ -151,6 +153,8 @@ int Lcd::renderDriverPrimary() {
   
   double vbat;
   vbatGlobalRead(vbat);
+  double teng;
+  tengGlobalRead(teng);
 
   display_->setCursor(0,0);
   this->print("GPS:");
@@ -165,8 +169,12 @@ int Lcd::renderDriverPrimary() {
   this->print(gps_data.speed_.value_);
   
   display_->setCursor(0,3);
-  this->print("VBAT:");
+  this->print("Vbat:");
   this->print(vbat);
+
+  display_->setCursor(10,3);
+  this->print("Teng:");
+  this->print(teng);
   
   return 0;
 }
@@ -206,10 +214,28 @@ int Lcd::renderMsgConfigNoTracks() {
 
 int Lcd::renderMsgBatteryLow() {
   this->clear();
-  display_->setCursor(2, 1);
-  this->print("BATTERY WARNING");
+  display_->setCursor(6, 1);
+  this->print("WARNING");
   display_->setCursor(6, 2);
   this->print("VBAT LOW");
+  return 0;
+}
+
+int Lcd::renderMsgEngineTempLow() {
+  this->clear();
+  display_->setCursor(6, 1);
+  this->print("WARNING");
+  display_->setCursor(2, 2);
+  this->print("ENGINE TEMP LOW");
+  return 0;
+}
+
+int Lcd::renderMsgEngineTempHigh() {
+  this->clear();
+  display_->setCursor(6, 1);
+  this->print("WARNING");
+  display_->setCursor(2, 2);
+  this->print("ENGINE TEMP HIGH");
   return 0;
 }
 
@@ -413,6 +439,13 @@ int Lcd::loop(unsigned long timeout_ms) {
       case task::DisplayMsgBatteryLow:
         activateMessage(screen::MsgBatteryLow, next_task.data_);
         break;
+        
+      case task::DisplayMsgEngineTempLow:
+        activateMessage(screen::MsgEngineTempLow, next_task.data_);
+        break;
+        
+      case task::DisplayMsgEngineTempHigh:
+        activateMessage(screen::MsgEngineTempLow, next_task.data_);
 
       default:
         break;
@@ -466,6 +499,14 @@ int Lcd::loop(unsigned long timeout_ms) {
       
     case screen::MsgBatteryLow:
       this->renderMsgBatteryLow();
+      break;
+      
+    case screen::MsgEngineTempLow:
+      this->renderMsgEngineTempLow();
+      break;
+      
+    case screen::MsgEngineTempHigh:
+      this->renderMsgEngineTempHigh();
       break;
 
     default:

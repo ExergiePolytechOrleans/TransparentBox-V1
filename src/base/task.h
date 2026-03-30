@@ -31,6 +31,8 @@ enum Type : uint8_t {
     DisplayMsgTrackDetectOk,
     DisplayMsgConfigNoTracks,
     DisplayMsgBatteryLow,
+    DisplayMsgEngineTempLow,
+    DisplayMsgEngineTempHigh,
     ConfigTrackDetect,
     ConfigWriteTempTrack,
     ConfigTrackDelete,

@@ -26,6 +26,8 @@ enum LcdScreen : uint8_t {
   MsgTrackDetectOk,
   MsgConfigNoTracks,
   MsgBatteryLow,
+  MsgEngineTempLow,
+  MsgEngineTempHigh,
 };
 
 } // namespace screen
@@ -68,6 +70,8 @@ private:
   int renderMsgTrackDetectOk();
   int renderMsgConfigNoTracks();
   int renderMsgBatteryLow();
+  int renderMsgEngineTempLow();
+  int renderMsgEngineTempHigh();
 
 public:
   int push(const Task &task) override;

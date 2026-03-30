@@ -483,7 +483,7 @@ int Cmd::handleThermoSetHigh(unsigned short argc, char* argv[]) {
     logger_->info("Setting high level for TENG");
   }
 #endif
-  router::send(module::Config, task::ConfigTengSetLow, task_data);
+  router::send(module::Config, task::ConfigTengSetHigh, task_data);
   return 0;
 }
 
