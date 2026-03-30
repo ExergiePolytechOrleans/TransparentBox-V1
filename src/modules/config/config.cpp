@@ -207,6 +207,11 @@ int Config::taskConfigDetectTrack(unsigned long timeout_ms) {
       this->taskComplete();
       if (load_result == 0) {
         no_tracks_notice_shown_ = false;
+        #ifdef INFO
+        if (logger_ != nullptr) {
+          logger_->info("Track detected: " + String(loaded_track_.name_));
+        }
+        #endif
         router::send(module::Lcd, task::DisplayMsgTrackDetectOk, 4000);
         return 0;
       }
@@ -230,6 +235,11 @@ int Config::handleActiveTask(unsigned long timeout_ms) {
   switch (active_task_.type_) {
   case task::ConfigTrackDetect: {
     if (!is_track_loaded_ || active_task_.data_ == 1) {
+      #ifdef DEBUG
+      if (logger_ != nullptr) {
+        logger_->debug("Detect track called");
+      }
+      #endif
       return taskConfigDetectTrack(timeout_ms);
     }
     this->taskComplete();
