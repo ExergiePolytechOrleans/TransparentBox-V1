@@ -49,6 +49,29 @@ int Gps::loop(unsigned long timeout_ms) {
       return 1;
     }
   }
+  
+  Task active; 
+  int res = queue_.pop(active);
+  if (res == 0) {
+    if (active.target_ == module::Gps) {
+
+    } else if (active.target_ == module::All) {
+      switch (active.type_)
+      {
+      case task::AllTrackLoaded:
+        #ifdef DEBUG
+        if (logger_ != nullptr) {
+          logger_->debug("GPS received track loaded sig");
+        }
+        #endif
+        lap_active_ = true;
+        break;
+      
+      default:
+        break;
+      }
+    }
+  }
 
   return 0;
 }

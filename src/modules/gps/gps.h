@@ -13,6 +13,15 @@
 #include "data/gps_store.h"
 #include "base/router.h"
 
+namespace trigger_status {
+  
+enum TriggerStatus {
+  Idle,
+  Armed,
+  Trigd,
+};
+}
+
 class Gps : public ModuleBase {
 private:
   TinyGPSPlus *gps_;
@@ -20,6 +29,12 @@ private:
   SystemLogger *logger_;
   RingBuffer<Task, 16> queue_;
   uint32_t last_fix_value_ = 0;
+  trigger_status::TriggerStatus start_line_trigger_ = trigger_status::Idle;
+  bool lap_active_ = false;
+  unsigned long last_check_ = 0;
+  unsigned long check_interval_ = 250;
+  unsigned long last_arm_ = 0;
+  int arm_sign_ = 0;
 
 public:
   int push(const Task &task) override;

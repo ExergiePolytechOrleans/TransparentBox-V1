@@ -375,5 +375,6 @@ int Config::loadTrack(unsigned int idx) {
   loaded_track_ = track_data;
   trackGlobalWrite(loaded_track_);
   is_track_loaded_ = true;
+  router::send(module::All, task::AllTrackLoaded);
   return 0;
 }

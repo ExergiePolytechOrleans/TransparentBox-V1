@@ -44,6 +44,7 @@ enum Type : uint8_t {
     ConfigTengSetHigh,
     BatteryCal,
     AllConfigUpdated,
+    AllTrackLoaded,
 };
 
 } // namespace task
