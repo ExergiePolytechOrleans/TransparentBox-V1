@@ -68,7 +68,10 @@ int Config::deleteTrack(unsigned short idx) {
   if (is_track_loaded_ && loaded_track_.id_ == idx) {
     is_track_loaded_ = false;
     loaded_track_ = {};
-    trackGlobalWrite(loaded_track_);
+    GlobalTrackData track;
+    track.loaded = false;
+    track.root_ = loaded_track_;
+    trackGlobalWrite(track);
   }
 
   int write_result = this->writeConfig();
@@ -88,7 +91,10 @@ int Config::resetConfig() {
   loaded_track_ = {};
   task_memory_stale_ = true;
   no_tracks_notice_shown_ = false;
-  trackGlobalWrite(loaded_track_);
+    GlobalTrackData track;
+    track.loaded = false;
+    track.root_ = loaded_track_;
+    trackGlobalWrite(track);
 
 #ifdef INFO
   if (logger_ != nullptr) {
@@ -373,7 +379,10 @@ int Config::loadTrack(unsigned int idx) {
   }
 
   loaded_track_ = track_data;
-  trackGlobalWrite(loaded_track_);
+  GlobalTrackData track;
+  track.loaded = true;
+  track.root_ = track_data;
+  trackGlobalWrite(track);
   is_track_loaded_ = true;
   router::send(module::All, task::AllTrackLoaded);
   return 0;

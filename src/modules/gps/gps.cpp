@@ -50,6 +50,13 @@ int Gps::loop(unsigned long timeout_ms) {
     }
   }
   
+  if (lap_active_) {
+    if (start_line_trigger_ == trigger_status::Idle) {
+      float current_lat = gps_->location.lat();  
+      float current_lng = gps_->location.lat();  
+    }
+  }
+  
   Task active; 
   int res = queue_.pop(active);
   if (res == 0) {

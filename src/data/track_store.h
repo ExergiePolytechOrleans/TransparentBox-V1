@@ -6,12 +6,12 @@
 #include "custom_types.h"
 #include <EEPROM.h>
 
-extern volatile TrackData track_data_global;
+extern volatile GlobalTrackData track_data_global;
 extern volatile TrackData track_data_temp_global;
 
-void trackGlobalRead(TrackData& out);
-int trackGlobalRead(unsigned short idx, TrackData& out);
-void trackGlobalWrite(const TrackData& in);
+void trackGlobalRead(GlobalTrackData& out);
+int trackGlobalRead(unsigned short idx, GlobalTrackData& out);
+void trackGlobalWrite(const GlobalTrackData& in);
 
 void trackTempGlobalRead(TrackData& out);
 void trackTempGlobalWrite(const TrackData& in);

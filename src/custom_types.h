@@ -23,12 +23,27 @@ struct LatLng {
     float lng_;
 };
 
+struct Vec2 {
+    float x_;
+    float y_;
+};
+
+Vec2 eqRectProjection(const LatLng target, const LatLng ref);
+Vec2 abMidpoint(const Vec2 A, const Vec2 B);
+float abSqDist(const Vec2 A, const Vec2 B);
+
 struct TrackData {
     uint16_t magic_ = CONFIG_MAGIC;
     unsigned short id_;
     char name_[21];
     LatLng point_a_;
     LatLng point_b_;
+};
+
+struct GlobalTrackData {
+    bool loaded = false;
+    Vec2 center_;
+    TrackData root_;
 };
 
 struct GpsSubData {

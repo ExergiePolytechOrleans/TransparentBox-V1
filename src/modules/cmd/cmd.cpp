@@ -149,7 +149,7 @@ int Cmd::dumpTrackSlot(unsigned short id) {
   configGlobalRead(config);
   bool occupied = config.track_slot_occupied_[id - 1];
 
-  TrackData track_data;
+  GlobalTrackData track_data;
   int result = trackGlobalRead(id, track_data);
   if (result != 0) {
 #ifdef ERROR
@@ -164,12 +164,12 @@ int Cmd::dumpTrackSlot(unsigned short id) {
   if (logger_ != nullptr) {
     logger_->info("Track dump for slot " + String(id));
     logger_->info(String("\tOccupied flag: ") + String(occupied));
-    logger_->info(String("\tID: ") + String(track_data.id_));
-    logger_->info(String("\tName: ") + String(track_data.name_));
-    logger_->info(String("\tPoint A lat: ") + String(track_data.point_a_.lat_, 6));
-    logger_->info(String("\tPoint A lng: ") + String(track_data.point_a_.lng_, 6));
-    logger_->info(String("\tPoint B lat: ") + String(track_data.point_b_.lat_, 6));
-    logger_->info(String("\tPoint B lng: ") + String(track_data.point_b_.lng_, 6));
+    logger_->info(String("\tID: ") + String(track_data.root_.id_));
+    logger_->info(String("\tName: ") + String(track_data.root_.name_));
+    logger_->info(String("\tPoint A lat: ") + String(track_data.root_.point_a_.lat_, 6));
+    logger_->info(String("\tPoint A lng: ") + String(track_data.root_.point_a_.lng_, 6));
+    logger_->info(String("\tPoint B lat: ") + String(track_data.root_.point_b_.lat_, 6));
+    logger_->info(String("\tPoint B lng: ") + String(track_data.root_.point_b_.lng_, 6));
   }
 #endif
 

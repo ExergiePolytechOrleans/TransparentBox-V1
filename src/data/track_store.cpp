@@ -4,14 +4,14 @@
 #include "data/track_store.h"
 #include "data/eeprom_layout.h"
 
- volatile TrackData track_data_global = {};
+ volatile GlobalTrackData track_data_global = {};
 volatile TrackData track_data_temp_global = {};
 
- void trackGlobalRead(TrackData& out) {
+ void trackGlobalRead(GlobalTrackData& out) {
      copyFromVolatile(out, track_data_global);
  }
 
- int trackGlobalRead(unsigned short idx, TrackData& out) {
+ int trackGlobalRead(unsigned short idx, GlobalTrackData& out) {
      if (idx < 1 || idx > 8) {
         return 1;
      }
@@ -20,11 +20,13 @@ volatile TrackData track_data_temp_global = {};
      if (track_data.magic_ != CONFIG_MAGIC) {
         return 1;
      }
-     out = track_data;
+     
+     out.loaded = true;
+     out.root_ = track_data;
      return 0;
  }
 
- void trackGlobalWrite(const TrackData& in) {
+ void trackGlobalWrite(const GlobalTrackData& in) {
      copyToVolatile(track_data_global, in);
  }
 

@@ -195,11 +195,11 @@ int Lcd::renderMsgTrackDetectOk() {
   display_->setCursor(3, 1);
   this->print("TRACK DETECTED");
 
-  TrackData track_data;
+  GlobalTrackData track_data;
   trackGlobalRead(track_data);
 
-  display_->setCursor((20 - strlen(track_data.name_)) / 2, 2);
-  this->print(track_data.name_);
+  display_->setCursor((20 - strlen(track_data.root_.name_)) / 2, 2);
+  this->print(track_data.root_.name_);
   return 0;
 }
 
