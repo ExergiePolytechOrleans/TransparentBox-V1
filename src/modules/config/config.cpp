@@ -380,16 +380,14 @@ int Config::loadTrack(unsigned int idx) {
 
   loaded_track_ = track_data;
   GlobalTrackData track;
+
   track.loaded_ = true;
+
   Vec2 point_b =eqRectProjection(track_data.point_b_, track_data.point_a_);
-  track.center_ = abMidpoint(point_b, (Vec2){0.0f,0.0f});
-  track.circle_radius_ = max(10.0f, vecMod(point_b) * 1.25f);
-  #ifdef DEBUG
-  if (logger_ != nullptr) {
-    logger_->debug("Radius: " + String(track.circle_radius_));
-    logger_->debug("Line Length: " + String(vecMod(point_b)));
-  }
-  #endif
+  track.center_ = vec2Midpoint(point_b, (Vec2){0.0f,0.0f});
+  float radius = max(10.0f, vecMod(point_b) * 1.25f);
+  track.circle_radius_sq_ = radius*radius;
+
   track.root_ = track_data;
   trackGlobalWrite(track);
   is_track_loaded_ = true;

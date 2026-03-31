@@ -41,14 +41,14 @@ LatLng eqRectInverse(const Vec2& point, const LatLng& ref) {
     return res;
 }
 
-Vec2 abMidpoint(const Vec2& A, const Vec2& B) {
+Vec2 vec2Midpoint(const Vec2& A, const Vec2& B) {
   Vec2 res;
   res.x_ = (A.x_ + B.x_) * 0.5f;
   res.y_ = (A.y_ + B.y_) * 0.5f;
   return res;
 }
 
-Vec2 abSum(const Vec2& A, const Vec2& B) {
+Vec2 vec2Sum(const Vec2& A, const Vec2& B) {
   Vec2 res;
   res.x_ = A.x_ + B.x_;
   res.y_ = A.y_ + B.y_;
@@ -59,8 +59,13 @@ float vecMod(const Vec2& in) {
   return sqrtf(in.x_*in.x_ + in.y_*in.y_);
 }
 
-float abSqDist(const Vec2& A, const Vec2& B) {
+float vec2SqDist(const Vec2& A, const Vec2& B) {
   float deltaX = B.x_ - A.x_;
   float deltaY = B.y_ - A.y_;
   return deltaX * deltaX + deltaY * deltaY;
+}
+
+
+float vec2Cross(const Vec2& B, const Vec2& M) {
+  return B.x_ * M.y_ - B.y_ * M.x_;
 }

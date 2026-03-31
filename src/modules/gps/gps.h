@@ -30,6 +30,13 @@ private:
   RingBuffer<Task, 16> queue_;
   uint32_t last_fix_value_ = 0;
   trigger_status::TriggerStatus start_line_trigger_ = trigger_status::Idle;
+
+  LatLng track_point_a_;
+  LatLng track_point_b_;
+  Vec2 track_vec_b_;
+  Vec2 track_vec_center_;
+  float track_sq_dist_;
+
   bool lap_active_ = false;
   unsigned long last_check_ = 0;
   unsigned long check_interval_ = 250;

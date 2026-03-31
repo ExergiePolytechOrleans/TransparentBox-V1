@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "gps.h"
+#include "math.h"
 
 #include "data/track_store.h"
 
@@ -51,7 +52,34 @@ int Gps::loop(unsigned long timeout_ms) {
   }
 
   if (lap_active_) {
-    if (start_line_trigger_ == trigger_status::Idle) {
+    if (millis() - last_check_ > check_interval_) {
+      if (start_line_trigger_ == trigger_status::Idle) {
+        GpsData gps;
+        gpsGlobalRead(gps);
+        LatLng vehicle_position = {gps.lat_.value_, gps.lng_.value_};
+
+        Vec2 vehicle_pos_vec =
+            eqRectProjection(vehicle_position, track_point_a_);
+        float sq_diff = vec2SqDist(track_vec_center_, vehicle_pos_vec);
+        if (sq_diff < track_sq_dist_) {
+          start_line_trigger_ = trigger_status::Armed;
+          last_arm_ = millis();
+          float cross = vec2Cross(track_vec_b_, vehicle_pos_vec);
+          if (cross > 0) {
+            arm_sign_ = 1;
+          } else {
+            arm_sign_ = -1;
+          }
+        } else {
+          float cross = vec2Cross(track_vec_b_, vehicle_pos_vec);
+          #ifdef DEBUG
+          if (logger_ != nullptr) {
+            logger_->debug(String(cross, 6));
+          }
+          #endif
+        }
+      }
+      last_check_ = millis();
     }
   }
 
@@ -69,6 +97,13 @@ int Gps::loop(unsigned long timeout_ms) {
         }
 #endif
         lap_active_ = true;
+        GlobalTrackData track;
+        trackGlobalRead(track);
+        track_point_a_ = track.root_.point_a_;
+        track_point_b_ = track.root_.point_b_;
+        track_vec_center_ = track.center_;
+        track_sq_dist_ = track.circle_radius_sq_;
+        track_vec_b_ = eqRectProjection(track_point_b_, track_point_a_);
         break;
 
       default:

@@ -30,10 +30,11 @@ struct Vec2 {
 
 Vec2 eqRectProjection(const LatLng& target, const LatLng& ref);
 LatLng eqRectInverse(const Vec2& point, const LatLng& ref);
-Vec2 abMidpoint(const Vec2& A, const Vec2& B);
-Vec2 abSum(const Vec2& A, const Vec2& B);
+Vec2 vec2Midpoint(const Vec2& A, const Vec2& B);
+Vec2 vec2Sum(const Vec2& A, const Vec2& B);
 float vecMod(const Vec2& in);
-float abSqDist(const Vec2& A, const Vec2& B);
+float vec2SqDist(const Vec2& A, const Vec2& B);
+float vec2Cross(const Vec2& B, const Vec2& M);
 
 struct TrackData {
     uint16_t magic_ = CONFIG_MAGIC;
@@ -46,7 +47,7 @@ struct TrackData {
 struct GlobalTrackData {
     bool loaded_ = false;
     Vec2 center_;
-    float circle_radius_;
+    float circle_radius_sq_;
     TrackData root_;
 };
 
