@@ -4,11 +4,11 @@
 
 #include "gps.h"
 
+#include "data/track_store.h"
+
 #define MOD "modules/gps/gps.h"
 
-int Gps::push(const Task &task) {
-  return queue_.push(task);
-}
+int Gps::push(const Task &task) { return queue_.push(task); }
 
 Gps::Gps(HardwareSerial *data_stream)
     : gps_(nullptr), data_stream_(data_stream), logger_(nullptr) {
@@ -49,31 +49,28 @@ int Gps::loop(unsigned long timeout_ms) {
       return 1;
     }
   }
-  
+
   if (lap_active_) {
     if (start_line_trigger_ == trigger_status::Idle) {
-      float current_lat = gps_->location.lat();  
-      float current_lng = gps_->location.lat();  
     }
   }
-  
-  Task active; 
+
+  Task active;
   int res = queue_.pop(active);
   if (res == 0) {
     if (active.target_ == module::Gps) {
 
     } else if (active.target_ == module::All) {
-      switch (active.type_)
-      {
+      switch (active.type_) {
       case task::AllTrackLoaded:
-        #ifdef DEBUG
+#ifdef DEBUG
         if (logger_ != nullptr) {
           logger_->debug("GPS received track loaded sig");
         }
-        #endif
+#endif
         lap_active_ = true;
         break;
-      
+
       default:
         break;
       }

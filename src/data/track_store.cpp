@@ -21,7 +21,7 @@ volatile TrackData track_data_temp_global = {};
         return 1;
      }
      
-     out.loaded = true;
+     out.loaded_ = true;
      out.root_ = track_data;
      return 0;
  }

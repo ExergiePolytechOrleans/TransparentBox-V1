@@ -69,7 +69,7 @@ int Config::deleteTrack(unsigned short idx) {
     is_track_loaded_ = false;
     loaded_track_ = {};
     GlobalTrackData track;
-    track.loaded = false;
+    track.loaded_ = false;
     track.root_ = loaded_track_;
     trackGlobalWrite(track);
   }
@@ -92,7 +92,7 @@ int Config::resetConfig() {
   task_memory_stale_ = true;
   no_tracks_notice_shown_ = false;
     GlobalTrackData track;
-    track.loaded = false;
+    track.loaded_ = false;
     track.root_ = loaded_track_;
     trackGlobalWrite(track);
 
@@ -380,7 +380,16 @@ int Config::loadTrack(unsigned int idx) {
 
   loaded_track_ = track_data;
   GlobalTrackData track;
-  track.loaded = true;
+  track.loaded_ = true;
+  Vec2 point_b =eqRectProjection(track_data.point_b_, track_data.point_a_);
+  track.center_ = abMidpoint(point_b, (Vec2){0.0f,0.0f});
+  track.circle_radius_ = max(10.0f, vecMod(point_b) * 1.25f);
+  #ifdef DEBUG
+  if (logger_ != nullptr) {
+    logger_->debug("Radius: " + String(track.circle_radius_));
+    logger_->debug("Line Length: " + String(vecMod(point_b)));
+  }
+  #endif
   track.root_ = track_data;
   trackGlobalWrite(track);
   is_track_loaded_ = true;
