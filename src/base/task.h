@@ -15,6 +15,7 @@ enum Id : uint8_t {
     Battery,
     Thermocouple,
     Telemetry,
+    LapCounter,
     Count,
     Null,
     All,
