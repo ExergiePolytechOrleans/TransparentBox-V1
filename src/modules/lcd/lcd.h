@@ -51,6 +51,7 @@ private:
   RingBuffer<Task, 16> queue_;
   Task deferred_task_{};
   bool deferred_task_valid_ = false;
+  bool base_rendered_ = false;
 
   void clear();
   void print(const String &msg);

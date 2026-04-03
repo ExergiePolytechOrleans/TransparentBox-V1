@@ -98,6 +98,7 @@ void Lcd::expireMessageIfNeeded(unsigned long now) {
     message_screen_ = screen::Blank;
     screen_ = data_screen_;
     force_render_ = true;
+    base_rendered_ = false;
   }
 }
 
@@ -151,7 +152,6 @@ int Lcd::renderGpsDebug() {
 }
 
 int Lcd::renderDriverPrimary() {
-  this->clear();
 
   GpsData gps_data;
   gpsGlobalRead(gps_data);
@@ -163,128 +163,166 @@ int Lcd::renderDriverPrimary() {
 
   int line_trigger;
   gpsTriggerGlobalRead(line_trigger);
-  
+
   uint16_t num_laps;
   lapCountGlobalRead(num_laps);
 
-  display_->setCursor(0, 0);
-  this->print("GPS:");
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(0, 0);
+    this->print("GPS:");
+
+    display_->setCursor(7, 0);
+    this->print("LAPS:");
+
+    display_->setCursor(0, 2);
+    this->print("SPD:");
+
+    display_->setCursor(0, 3);
+    this->print("V:");
+
+    display_->setCursor(10, 3);
+    this->print("T:");
+    base_rendered_ = true;
+  }
+
+  display_->setCursor(4, 0);
   if (gps_data.num_fix_ != 0) {
     this->print("Y");
   } else {
     this->print("N");
   }
 
-  display_->setCursor(7, 0);
-  this->print("LAPS:");
-  if (num_laps < 10) this->print('0');
+  display_->setCursor(12, 0);
+  if (num_laps < 10)
+    this->print('0');
   this->print(num_laps, 10);
 
-  display_->setCursor(0, 2);
-  this->print("SPD:");
-  if (gps_data.speed_.valid_) {
-    this->print(gps_data.speed_.value_, 1);
-  } else {
-    this->print("NA");
-  }
+  display_->setCursor(4, 2);
+  if (gps_data.speed_.value_ < 10.0)
+    this->print('0');
+  this->print(gps_data.speed_.value_, 1);
 
-  display_->setCursor(0, 3);
-  this->print("V:");
+  display_->setCursor(2, 3);
   this->print(vbat, 1);
 
-  display_->setCursor(10, 3);
-  this->print("T:");
+  display_->setCursor(12, 3);
   this->print(teng, 1);
 
   return 0;
 }
 
 int Lcd::renderMsgGpsFix() {
-  this->clear();
-  display_->setCursor(6, 1);
-  this->print("GPS INFO");
-  display_->setCursor(7, 2);
-  this->print("FIX OK");
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(6, 1);
+    this->print("GPS INFO");
+    display_->setCursor(7, 2);
+    this->print("FIX OK");
+    base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgGpsTrigger() {
-  this->clear();
-  display_->setCursor(6, 1);
-  this->print("GPS INFO");
-  display_->setCursor(4, 2);
-  this->print("LINE TRIGGER");
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(6, 1);
+    this->print("GPS INFO");
+    display_->setCursor(4, 2);
+    this->print("LINE TRIGGER");
+    base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgTrackDetectOk() {
-  this->clear();
-  display_->setCursor(6, 0);
-  this->print("GPS INFO");
-  display_->setCursor(3, 1);
-  this->print("TRACK DETECTED");
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(6, 0);
+    this->print("GPS INFO");
+    display_->setCursor(3, 1);
+    this->print("TRACK DETECTED");
 
-  GlobalTrackData track_data;
-  trackGlobalRead(track_data);
+    GlobalTrackData track_data;
+    trackGlobalRead(track_data);
 
-  display_->setCursor((20 - strlen(track_data.root_.name_)) / 2, 2);
-  this->print(track_data.root_.name_);
+    display_->setCursor((20 - strlen(track_data.root_.name_)) / 2, 2);
+    this->print(track_data.root_.name_);
+    base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgConfigNoTracks() {
-  this->clear();
-  display_->setCursor(4, 1);
-  this->print("CONFIG INFO");
-  display_->setCursor(2, 2);
-  this->print("NO TRACKS LOADED");
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(4, 1);
+    this->print("CONFIG INFO");
+    display_->setCursor(2, 2);
+    this->print("NO TRACKS LOADED");
+    base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgBatteryLow() {
-  this->clear();
-  display_->setCursor(6, 1);
-  this->print("WARNING");
-  display_->setCursor(6, 2);
-  this->print("VBAT LOW");
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(6, 1);
+    this->print("WARNING");
+    display_->setCursor(6, 2);
+    this->print("VBAT LOW");
+    base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgEngineTempLow() {
+  if (!base_rendered_) {
   this->clear();
   display_->setCursor(6, 1);
   this->print("WARNING");
   display_->setCursor(2, 2);
   this->print("ENGINE TEMP LOW");
+  base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgEngineTempHigh() {
+  if (!base_rendered_) {
   this->clear();
   display_->setCursor(6, 1);
   this->print("WARNING");
   display_->setCursor(2, 2);
   this->print("ENGINE TEMP HIGH");
+  base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgLapCounterStart() {
+  if (!base_rendered_) {
   this->clear();
   display_->setCursor(5, 1);
   this->print("LAP COUNTER");
   display_->setCursor(6, 2);
   this->print("STARTED");
+  base_rendered_ = true;
+  }
   return 0;
 }
 
 int Lcd::renderMsgLapCounterLapTime() {
 
+  if (!base_rendered_) {
   uint32_t time_cs;
   lastLapTimeGlobalRead(time_cs);
 
   uint32_t minutes = (time_cs / 6000);
   uint32_t seconds = (time_cs / 100) % 60;
-  uint32_t cs      = time_cs % 100;
+  uint32_t cs = time_cs % 100;
 
   this->clear();
 
@@ -293,18 +331,23 @@ int Lcd::renderMsgLapCounterLapTime() {
 
   display_->setCursor(6, 2);
 
-  if (minutes < 10) this->print('0');
+  if (minutes < 10)
+    this->print('0');
   this->print(minutes, 10);
 
   this->print(':');
 
-  if (seconds < 10) this->print('0');
+  if (seconds < 10)
+    this->print('0');
   this->print(seconds, 10);
 
   this->print('.');
 
-  if (cs < 10) this->print('0');
+  if (cs < 10)
+    this->print('0');
   this->print(cs, 10);
+  base_rendered_ = true;
+  }
 
   return 0;
 }
@@ -321,7 +364,7 @@ Lcd::Lcd()
 Lcd::Lcd(SystemLogger *logger)
     : display_cleared_(false), logger_(logger), screen_(screen::Blank),
       data_screen_(screen::Blank), message_screen_(screen::Blank),
-      last_render_(0), frame_duration_(2000) {
+      last_render_(0), frame_duration_(500) {
   display_ = new LiquidCrystal_I2C(0x27, 20, 4);
 }
 
@@ -469,6 +512,7 @@ int Lcd::loop(unsigned long timeout_ms) {
 
     switch (next_task.type_) {
     case task::DisplayGpsDebug:
+      base_rendered_ = false;
       data_screen_ = screen::GpsDebug;
       if (!message_active_) {
         screen_ = data_screen_;
@@ -477,6 +521,7 @@ int Lcd::loop(unsigned long timeout_ms) {
       break;
 
     case task::DisplayDriverPrimary:
+      base_rendered_ = false;
       data_screen_ = screen::DriverPrimary;
       if (!message_active_) {
         screen_ = data_screen_;
@@ -485,34 +530,42 @@ int Lcd::loop(unsigned long timeout_ms) {
       break;
 
     case task::DisplayMsgGpsFix:
+      base_rendered_ = false;
       activateMessage(screen::MsgGpsFix, next_task.data_);
       break;
 
     case task::DisplayMsgTrackDetectOk:
+      base_rendered_ = false;
       activateMessage(screen::MsgTrackDetectOk, next_task.data_);
       break;
 
     case task::DisplayMsgConfigNoTracks:
+      base_rendered_ = false;
       activateMessage(screen::MsgConfigNoTracks, next_task.data_);
       break;
 
     case task::DisplayMsgBatteryLow:
+      base_rendered_ = false;
       activateMessage(screen::MsgBatteryLow, next_task.data_);
       break;
 
     case task::DisplayMsgEngineTempLow:
+      base_rendered_ = false;
       activateMessage(screen::MsgEngineTempLow, next_task.data_);
       break;
 
     case task::DisplayMsgEngineTempHigh:
+      base_rendered_ = false;
       activateMessage(screen::MsgEngineTempHigh, next_task.data_);
       break;
 
     case task::DisplayMsgLapCounterStart:
+      base_rendered_ = false;
       activateMessage(screen::MsgLapCounterStart, next_task.data_);
       break;
 
     case task::DisplayMsgLapCounterLapTime:
+      base_rendered_ = false;
       activateMessage(screen::MsgLapCounterLapTime, next_task.data_);
 
     default:
