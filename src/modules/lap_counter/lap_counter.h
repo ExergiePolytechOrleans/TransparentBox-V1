@@ -18,6 +18,16 @@ private:
   uint32_t last_trigger_time_ = 0;
   uint32_t lap_times_[64];
   int16_t lap_times_idx_ = -1;
+  
+
+  bool average_enabled_ = false;
+  unsigned long average_loop_time_ = 250;
+  unsigned long last_average_time_ = 0;
+  float continuous_speed_sum_ = 0;
+  float lap_speed_sum_ = 0;
+  float continuous_time_sum_ = 0;
+  float lap_time_sum_ = 0;
+  float previous_speed_ = 0;
 
 
 public:

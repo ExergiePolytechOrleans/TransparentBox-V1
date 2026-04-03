@@ -166,6 +166,9 @@ int Lcd::renderDriverPrimary() {
 
   uint16_t num_laps;
   lapCountGlobalRead(num_laps);
+  
+  float average_speed;
+  speedAvgGlobalRead(average_speed);
 
   if (!base_rendered_) {
     this->clear();
@@ -177,6 +180,9 @@ int Lcd::renderDriverPrimary() {
 
     display_->setCursor(0, 2);
     this->print("SPD:");
+
+    display_->setCursor(10, 2);
+    this->print("AVG:");
 
     display_->setCursor(0, 3);
     this->print("V:");
@@ -202,6 +208,11 @@ int Lcd::renderDriverPrimary() {
   if (gps_data.speed_.value_ < 10.0)
     this->print('0');
   this->print(gps_data.speed_.value_, 1);
+
+  display_->setCursor(14, 2);
+  if (average_speed < 10.0)
+    this->print('0');
+  this->print(average_speed, 1);
 
   display_->setCursor(2, 3);
   this->print(vbat, 1);

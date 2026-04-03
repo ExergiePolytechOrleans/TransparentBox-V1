@@ -49,6 +49,7 @@ enum Type : uint8_t {
     AllConfigUpdated,
     AllTrackLoaded,
     AllStartLineTriggered,
+    AllGpsFixOk,
 };
 
 } // namespace task

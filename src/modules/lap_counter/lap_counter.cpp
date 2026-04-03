@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "lap_counter.h"
 #include "base/router.h"
+#include "custom_types.h"
 #include "data/general_store.h"
 #include "data/gps_store.h"
 #include "data/track_store.h"
-#include "custom_types.h"
 
 int LapCounter::push(const Task &task) { return queue_.push(task); }
 
@@ -67,10 +67,40 @@ int LapCounter::loop() {
         break;
       }
 
+      case task::AllGpsFixOk: {
+        average_enabled_ = true;
+#ifdef DEBUG
+        if (logger_ != nullptr) {
+          logger_->debug("Enabled average counter");
+        }
+#endif
+        break;
+      }
+
       default:
         break;
       }
     }
+  }
+
+  if (millis() - last_average_time_ > average_loop_time_ && average_enabled_) {
+    GpsData gps;
+    gpsGlobalRead(gps);
+    unsigned long now = millis();
+    float dt = (now - last_average_time_) / 1000.0f;
+
+    continuous_time_sum_ += dt;
+    if (last_average_time_ == 0) {
+      continuous_speed_sum_ += gps.speed_.value_ * dt;
+    } else {
+      continuous_speed_sum_ +=
+          (gps.speed_.value_ + previous_speed_) * 0.5f * dt;
+    }
+    previous_speed_ = gps.speed_.value_;
+
+    speedAvgGlobalWrite(continuous_speed_sum_ / continuous_time_sum_);
+
+    last_average_time_ = now;
   }
 
   return 0;
