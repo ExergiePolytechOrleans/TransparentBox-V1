@@ -11,14 +11,15 @@
 #include "base/ring_buffer.h"
 #include "base/module_base.h"
 #include "data/gps_store.h"
+#include "data/general_store.h"
 #include "base/router.h"
 
 namespace trigger_status {
   
 enum TriggerStatus {
-  Idle,
-  Armed,
-  Trigd,
+  Idle = 0,
+  Armed = 1,
+  Trigd = 2,
 };
 }
 
@@ -35,13 +36,15 @@ private:
   LatLng track_point_b_;
   Vec2 track_vec_b_;
   Vec2 track_vec_center_;
-  float track_sq_dist_;
+  float start_line_length_ = 0;
+  float start_line_sq_dist_ = 0;
 
   bool lap_active_ = false;
   unsigned long last_check_ = 0;
-  unsigned long check_interval_ = 250;
-  unsigned long last_arm_ = 0;
+  unsigned long check_interval_ = 100;
+  unsigned long state_changed_at_ = 0;
   int arm_sign_ = 0;
+
 
 public:
   int push(const Task &task) override;

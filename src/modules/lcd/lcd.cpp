@@ -6,6 +6,8 @@
 
 #include <Wire.h>
 #include <string.h>
+#include "modules/gps/gps.h"
+#include "data/general_store.h"
 
 #define MOD "modules/lcd/lcd.h"
 
@@ -155,26 +157,54 @@ int Lcd::renderDriverPrimary() {
   vbatGlobalRead(vbat);
   float teng;
   tengGlobalRead(teng);
+  
+  int line_trigger;
+  gpsTriggerGlobalRead(line_trigger);
 
   display_->setCursor(0,0);
   this->print("GPS:");
   if (gps_data.num_fix_ != 0) {
-    this->print("V");
+    this->print("Y");
   } else {
-    this->print("X");
+    this->print("N");
+  }
+
+  display_->setCursor(7,0);
+  this->print("TRIG:");
+  switch (line_trigger)
+  {
+  case 0:
+    this->print("I");
+    break;
+  
+  case 1:
+    this->print("A");
+    break;
+
+  case 2:
+    this->print("T");
+    break;
+
+  default:
+    this->print("NULL");
+    break;
   }
   
-  display_->setCursor(3,2);
-  this->print("SPEED: ");
-  this->print(gps_data.speed_.value_);
+  display_->setCursor(0,2);
+  this->print("SPD:");
+  if (gps_data.speed_.valid_) {
+    this->print(gps_data.speed_.value_, 1);
+  } else {
+    this->print("NA");
+  }
   
   display_->setCursor(0,3);
-  this->print("Vbat:");
-  this->print(vbat);
+  this->print("V:");
+  this->print(vbat, 1);
 
   display_->setCursor(10,3);
-  this->print("Teng:");
-  this->print(teng);
+  this->print("T:");
+  this->print(teng, 1);
   
   return 0;
 }
@@ -185,6 +215,15 @@ int Lcd::renderMsgGpsFix() {
   this->print("GPS INFO");
   display_->setCursor(7, 2);
   this->print("FIX OK");
+  return 0;
+}
+
+int Lcd::renderMsgGpsTrigger() {
+  this->clear();
+  display_->setCursor(6, 1);
+  this->print("GPS INFO");
+  display_->setCursor(4, 2);
+  this->print("LINE TRIGGER");
   return 0;
 }
 
@@ -445,7 +484,8 @@ int Lcd::loop(unsigned long timeout_ms) {
         break;
         
       case task::DisplayMsgEngineTempHigh:
-        activateMessage(screen::MsgEngineTempLow, next_task.data_);
+        activateMessage(screen::MsgEngineTempHigh, next_task.data_);
+        break;
 
       default:
         break;
@@ -480,13 +520,17 @@ int Lcd::loop(unsigned long timeout_ms) {
     case screen::GpsDebug:
       this->renderGpsDebug();
       break;
-      
+
     case screen::DriverPrimary:
       this->renderDriverPrimary();
       break;
 
     case screen::MsgGpsFix:
       this->renderMsgGpsFix();
+      break;
+
+    case screen::MsgGpsTrigger:
+      this->renderMsgGpsTrigger();
       break;
 
     case screen::MsgTrackDetectOk:

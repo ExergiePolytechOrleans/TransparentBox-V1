@@ -24,6 +24,7 @@ private:
     ConfigDump,
     TrackAutodetect,
     DisplayGpsDebug,
+    DisplayGpsLineDebug,
     DisplayDriverPrimary,
     BatteryCal,
     BatteryPrintVbat,

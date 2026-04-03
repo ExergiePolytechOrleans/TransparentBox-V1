@@ -23,6 +23,7 @@ enum LcdScreen : uint8_t {
   GpsDebug,
   DriverPrimary,
   MsgGpsFix,
+  MsgGpsTrigger,
   MsgTrackDetectOk,
   MsgConfigNoTracks,
   MsgBatteryLow,
@@ -67,6 +68,7 @@ private:
   int renderGpsDebug();
   int renderDriverPrimary();
   int renderMsgGpsFix();
+  int renderMsgGpsTrigger();
   int renderMsgTrackDetectOk();
   int renderMsgConfigNoTracks();
   int renderMsgBatteryLow();

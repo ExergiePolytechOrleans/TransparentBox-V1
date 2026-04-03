@@ -5,6 +5,7 @@
 
  volatile float vbat_global = 0;
  volatile float teng_global = 0;
+ volatile int gps_trigger_global = 0;
 
  void vbatGlobalRead(float& out) {
      out = vbat_global;
@@ -21,3 +22,11 @@
  void tengGlobalWrite(const float& in) {
      teng_global = in;
  }
+
+void gpsTriggerGlobalRead(int& out) {
+    out = gps_trigger_global;
+}
+
+void gpsTriggerGlobalWrite(const int& in) {
+    gps_trigger_global = in;
+}

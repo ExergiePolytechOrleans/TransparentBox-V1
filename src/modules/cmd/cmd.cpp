@@ -104,6 +104,10 @@ Cmd::CommandId Cmd::parseCommandName(const char *input) {
     return DisplayGpsDebug;
   }
 
+  if (strcmp(input, "DISPLAY_GPS_LINE_DEBUG") == 0) {
+    return DisplayGpsLineDebug;
+  }
+
   if (strcmp(input, "DISPLAY_DRIVER_PRIMARY") == 0) {
     return DisplayDriverPrimary;
   }
@@ -365,6 +369,7 @@ int Cmd::handleDisplayGpsDebug(unsigned short argc) {
   return router::send(module::Lcd, task::DisplayGpsDebug);
 }
 
+
 int Cmd::handleDisplayDriverPrimary(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
@@ -525,7 +530,7 @@ int Cmd::dispatchCommand(CommandId command, unsigned short argc, char *argv[]) {
       
     case DisplayGpsDebug:
       return this->handleDisplayGpsDebug(argc);
-      
+
     case DisplayDriverPrimary:
       return this->handleDisplayDriverPrimary(argc);
       

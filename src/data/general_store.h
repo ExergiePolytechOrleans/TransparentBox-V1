@@ -5,9 +5,13 @@
 
 extern volatile float vbat_global;
 extern volatile float teng_global;
+extern volatile int gps_trigger_global;
 
 void vbatGlobalRead(float& out);
 void vbatGlobalWrite(const float& in);
 
 void tengGlobalRead(float& out);
 void tengGlobalWrite(const float& in);
+
+void gpsTriggerGlobalRead(int& out);
+void gpsTriggerGlobalWrite(const int& in);

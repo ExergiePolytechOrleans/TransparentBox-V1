@@ -34,6 +34,7 @@ int Gps::init() {
 
 int Gps::loop(unsigned long timeout_ms) {
   unsigned long timeout = millis() + timeout_ms;
+  bool timed_out = false;
 
   while (data_stream_->available() > 0) {
     if (gps_->encode(data_stream_->read())) {
@@ -47,39 +48,8 @@ int Gps::loop(unsigned long timeout_ms) {
     }
 
     if (millis() > timeout) {
-      return 1;
-    }
-  }
-
-  if (lap_active_) {
-    if (millis() - last_check_ > check_interval_) {
-      if (start_line_trigger_ == trigger_status::Idle) {
-        GpsData gps;
-        gpsGlobalRead(gps);
-        LatLng vehicle_position = {gps.lat_.value_, gps.lng_.value_};
-
-        Vec2 vehicle_pos_vec =
-            eqRectProjection(vehicle_position, track_point_a_);
-        float sq_diff = vec2SqDist(track_vec_center_, vehicle_pos_vec);
-        if (sq_diff < track_sq_dist_) {
-          start_line_trigger_ = trigger_status::Armed;
-          last_arm_ = millis();
-          float cross = vec2Cross(track_vec_b_, vehicle_pos_vec);
-          if (cross > 0) {
-            arm_sign_ = 1;
-          } else {
-            arm_sign_ = -1;
-          }
-        } else {
-          float cross = vec2Cross(track_vec_b_, vehicle_pos_vec);
-          #ifdef DEBUG
-          if (logger_ != nullptr) {
-            logger_->debug(String(cross, 6));
-          }
-          #endif
-        }
-      }
-      last_check_ = millis();
+      timed_out = true;
+      break;
     }
   }
 
@@ -90,21 +60,29 @@ int Gps::loop(unsigned long timeout_ms) {
 
     } else if (active.target_ == module::All) {
       switch (active.type_) {
-      case task::AllTrackLoaded:
+      case task::AllTrackLoaded: {
 #ifdef DEBUG
         if (logger_ != nullptr) {
           logger_->debug("GPS received track loaded sig");
         }
 #endif
-        lap_active_ = true;
         GlobalTrackData track;
         trackGlobalRead(track);
+        lap_active_ = track.loaded_;
+        start_line_trigger_ = trigger_status::Idle;
+        gpsTriggerGlobalWrite(start_line_trigger_);
+        arm_sign_ = 0;
+        if (!track.loaded_) {
+          break;
+        }
         track_point_a_ = track.root_.point_a_;
         track_point_b_ = track.root_.point_b_;
-        track_vec_center_ = track.center_;
-        track_sq_dist_ = track.circle_radius_sq_;
         track_vec_b_ = eqRectProjection(track_point_b_, track_point_a_);
+        track_vec_center_ = track.center_;
+        start_line_length_ = vecMod(track_vec_b_);
+        start_line_sq_dist_ = track.circle_radius_sq_;
         break;
+      }
 
       default:
         break;
@@ -112,6 +90,63 @@ int Gps::loop(unsigned long timeout_ms) {
     }
   }
 
+  if (lap_active_ && millis() - last_check_ > check_interval_) {
+    unsigned long now = millis();
+    GpsData gps;
+    gpsGlobalRead(gps);
+    LatLng vehicle_position = {gps.lat_.value_, gps.lng_.value_};
+
+    Vec2 vehicle_pos_vec = eqRectProjection(vehicle_position, track_point_a_);
+    float center_dist_sq = vec2SqDist(track_vec_center_, vehicle_pos_vec);
+    float cross = vec2Cross(track_vec_b_, vehicle_pos_vec);
+    int sign = 0;
+    if (cross < 0) {
+      sign = -1;
+    } else if (cross > 0) {
+      sign = 1;
+    }
+
+    switch (start_line_trigger_) {
+    case trigger_status::Idle: {
+      if (center_dist_sq < start_line_sq_dist_) {
+        start_line_trigger_ = trigger_status::Armed;
+        gpsTriggerGlobalWrite(start_line_trigger_);
+        arm_sign_ = sign;
+        state_changed_at_ = now;
+      }
+      break;
+    };
+
+    case trigger_status::Armed: {
+      if (center_dist_sq > start_line_sq_dist_) {
+        start_line_trigger_ = trigger_status::Idle;
+        gpsTriggerGlobalWrite(start_line_trigger_);
+        arm_sign_ = 0;
+        state_changed_at_ = 0;
+      } else if ((sign == -1 && arm_sign_ == 1) || (sign == 1 && arm_sign_ == -1)) {
+        start_line_trigger_ = trigger_status::Trigd;
+        gpsTriggerGlobalWrite(start_line_trigger_);
+        arm_sign_ = 0;
+        state_changed_at_ = now;
+      }
+      break;
+    };
+
+    case trigger_status::Trigd: {
+      if (center_dist_sq > start_line_sq_dist_) {
+        start_line_trigger_ = trigger_status::Idle;
+        gpsTriggerGlobalWrite(start_line_trigger_);
+        arm_sign_ = 0;
+        state_changed_at_ = now;
+      }
+      break;
+    };
+
+    default:
+      break;
+    }
+    last_check_ = now;
+  }
   return 0;
 }
 
