@@ -35,6 +35,8 @@ enum Type : uint8_t {
     DisplayMsgBatteryLow,
     DisplayMsgEngineTempLow,
     DisplayMsgEngineTempHigh,
+    DisplayMsgLapCounterStart,
+    DisplayMsgLapCounterLapTime,
     ConfigTrackDetect,
     ConfigWriteTempTrack,
     ConfigTrackDelete,
@@ -46,6 +48,7 @@ enum Type : uint8_t {
     BatteryCal,
     AllConfigUpdated,
     AllTrackLoaded,
+    AllStartLineTriggered,
 };
 
 } // namespace task

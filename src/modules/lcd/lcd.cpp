@@ -4,10 +4,10 @@
 
 #include "lcd.h"
 
+#include "data/general_store.h"
+#include "modules/gps/gps.h"
 #include <Wire.h>
 #include <string.h>
-#include "modules/gps/gps.h"
-#include "data/general_store.h"
 
 #define MOD "modules/lcd/lcd.h"
 
@@ -60,20 +60,23 @@ void Lcd::print(int i, int base) {
 
 bool Lcd::isMessageTask(task::Type type) {
   switch (type) {
-    case task::DisplayMsgGpsFix:
-    case task::DisplayMsgTrackDetectOk:
-    case task::DisplayMsgConfigNoTracks:
-    case task::DisplayMsgBatteryLow:
-    case task::DisplayMsgEngineTempLow:
-    case task::DisplayMsgEngineTempHigh:
-      return true;
+  case task::DisplayMsgGpsFix:
+  case task::DisplayMsgTrackDetectOk:
+  case task::DisplayMsgConfigNoTracks:
+  case task::DisplayMsgBatteryLow:
+  case task::DisplayMsgEngineTempLow:
+  case task::DisplayMsgEngineTempHigh:
+  case task::DisplayMsgLapCounterLapTime:
+  case task::DisplayMsgLapCounterStart:
+    return true;
 
-    default:
-      return false;
+  default:
+    return false;
   }
 }
 
-void Lcd::activateMessage(screen::LcdScreen msg_screen, unsigned long duration_ms) {
+void Lcd::activateMessage(screen::LcdScreen msg_screen,
+                          unsigned long duration_ms) {
   if (duration_ms == 0) {
     duration_ms = frame_duration_;
   }
@@ -149,19 +152,19 @@ int Lcd::renderGpsDebug() {
 
 int Lcd::renderDriverPrimary() {
   this->clear();
-  
+
   GpsData gps_data;
   gpsGlobalRead(gps_data);
-  
+
   float vbat;
   vbatGlobalRead(vbat);
   float teng;
   tengGlobalRead(teng);
-  
+
   int line_trigger;
   gpsTriggerGlobalRead(line_trigger);
 
-  display_->setCursor(0,0);
+  display_->setCursor(0, 0);
   this->print("GPS:");
   if (gps_data.num_fix_ != 0) {
     this->print("Y");
@@ -169,14 +172,13 @@ int Lcd::renderDriverPrimary() {
     this->print("N");
   }
 
-  display_->setCursor(7,0);
+  display_->setCursor(7, 0);
   this->print("TRIG:");
-  switch (line_trigger)
-  {
+  switch (line_trigger) {
   case 0:
     this->print("I");
     break;
-  
+
   case 1:
     this->print("A");
     break;
@@ -189,23 +191,23 @@ int Lcd::renderDriverPrimary() {
     this->print("NULL");
     break;
   }
-  
-  display_->setCursor(0,2);
+
+  display_->setCursor(0, 2);
   this->print("SPD:");
   if (gps_data.speed_.valid_) {
     this->print(gps_data.speed_.value_, 1);
   } else {
     this->print("NA");
   }
-  
-  display_->setCursor(0,3);
+
+  display_->setCursor(0, 3);
   this->print("V:");
   this->print(vbat, 1);
 
-  display_->setCursor(10,3);
+  display_->setCursor(10, 3);
   this->print("T:");
   this->print(teng, 1);
-  
+
   return 0;
 }
 
@@ -278,29 +280,60 @@ int Lcd::renderMsgEngineTempHigh() {
   return 0;
 }
 
-int Lcd::push(const Task &task) {
-  return queue_.push(task);
+int Lcd::renderMsgLapCounterStart() {
+  this->clear();
+  display_->setCursor(5, 1);
+  this->print("LAP COUNTER");
+  display_->setCursor(6, 2);
+  this->print("STARTED");
+  return 0;
 }
 
+int Lcd::renderMsgLapCounterLapTime() {
+
+  uint32_t time_cs;
+  lastLapTimeGlobalRead(time_cs);
+
+  uint32_t minutes = (time_cs / 6000);
+  uint32_t seconds = (time_cs / 100) % 60;
+  uint32_t cs      = time_cs % 100;
+
+  this->clear();
+
+  display_->setCursor(6, 1);
+  this->print("LAP TIME");
+
+  display_->setCursor(6, 2);
+
+  if (minutes < 10) this->print('0');
+  this->print(minutes, 10);
+
+  this->print(':');
+
+  if (seconds < 10) this->print('0');
+  this->print(seconds, 10);
+
+  this->print('.');
+
+  if (cs < 10) this->print('0');
+  this->print(cs, 10);
+
+  return 0;
+}
+
+int Lcd::push(const Task &task) { return queue_.push(task); }
+
 Lcd::Lcd()
-    : display_cleared_(false),
-      logger_(nullptr),
-      screen_(screen::Blank),
-      data_screen_(screen::Blank),
-      message_screen_(screen::Blank),
-      last_render_(0),
-      frame_duration_(2000) {
+    : display_cleared_(false), logger_(nullptr), screen_(screen::Blank),
+      data_screen_(screen::Blank), message_screen_(screen::Blank),
+      last_render_(0), frame_duration_(2000) {
   display_ = new LiquidCrystal_I2C(0x27, 20, 4);
 }
 
 Lcd::Lcd(SystemLogger *logger)
-    : display_cleared_(false),
-      logger_(logger),
-      screen_(screen::Blank),
-      data_screen_(screen::Blank),
-      message_screen_(screen::Blank),
-      last_render_(0),
-      frame_duration_(2000) {
+    : display_cleared_(false), logger_(logger), screen_(screen::Blank),
+      data_screen_(screen::Blank), message_screen_(screen::Blank),
+      last_render_(0), frame_duration_(2000) {
   display_ = new LiquidCrystal_I2C(0x27, 20, 4);
 }
 
@@ -447,48 +480,55 @@ int Lcd::loop(unsigned long timeout_ms) {
     }
 
     switch (next_task.type_) {
-      case task::DisplayGpsDebug:
-        data_screen_ = screen::GpsDebug;
-        if (!message_active_) {
-          screen_ = data_screen_;
-          force_render_ = true;
-        }
-        break;
+    case task::DisplayGpsDebug:
+      data_screen_ = screen::GpsDebug;
+      if (!message_active_) {
+        screen_ = data_screen_;
+        force_render_ = true;
+      }
+      break;
 
-      case task::DisplayDriverPrimary:
-        data_screen_ = screen::DriverPrimary;
-        if (!message_active_) {
-          screen_ = data_screen_;
-          force_render_ = true;
-        }
-        break;
+    case task::DisplayDriverPrimary:
+      data_screen_ = screen::DriverPrimary;
+      if (!message_active_) {
+        screen_ = data_screen_;
+        force_render_ = true;
+      }
+      break;
 
-      case task::DisplayMsgGpsFix:
-        activateMessage(screen::MsgGpsFix, next_task.data_);
-        break;
+    case task::DisplayMsgGpsFix:
+      activateMessage(screen::MsgGpsFix, next_task.data_);
+      break;
 
-      case task::DisplayMsgTrackDetectOk:
-        activateMessage(screen::MsgTrackDetectOk, next_task.data_);
-        break;
+    case task::DisplayMsgTrackDetectOk:
+      activateMessage(screen::MsgTrackDetectOk, next_task.data_);
+      break;
 
-      case task::DisplayMsgConfigNoTracks:
-        activateMessage(screen::MsgConfigNoTracks, next_task.data_);
-        break;
-        
-      case task::DisplayMsgBatteryLow:
-        activateMessage(screen::MsgBatteryLow, next_task.data_);
-        break;
-        
-      case task::DisplayMsgEngineTempLow:
-        activateMessage(screen::MsgEngineTempLow, next_task.data_);
-        break;
-        
-      case task::DisplayMsgEngineTempHigh:
-        activateMessage(screen::MsgEngineTempHigh, next_task.data_);
-        break;
+    case task::DisplayMsgConfigNoTracks:
+      activateMessage(screen::MsgConfigNoTracks, next_task.data_);
+      break;
 
-      default:
-        break;
+    case task::DisplayMsgBatteryLow:
+      activateMessage(screen::MsgBatteryLow, next_task.data_);
+      break;
+
+    case task::DisplayMsgEngineTempLow:
+      activateMessage(screen::MsgEngineTempLow, next_task.data_);
+      break;
+
+    case task::DisplayMsgEngineTempHigh:
+      activateMessage(screen::MsgEngineTempHigh, next_task.data_);
+      break;
+
+    case task::DisplayMsgLapCounterStart:
+      activateMessage(screen::MsgLapCounterStart, next_task.data_);
+      break;
+
+    case task::DisplayMsgLapCounterLapTime:
+      activateMessage(screen::MsgLapCounterLapTime, next_task.data_);
+
+    default:
+      break;
     }
 
     now = millis();
@@ -513,48 +553,56 @@ int Lcd::loop(unsigned long timeout_ms) {
   }
 
   switch (screen_) {
-    case screen::Blank:
-      this->clear();
-      break;
+  case screen::Blank:
+    this->clear();
+    break;
 
-    case screen::GpsDebug:
-      this->renderGpsDebug();
-      break;
+  case screen::GpsDebug:
+    this->renderGpsDebug();
+    break;
 
-    case screen::DriverPrimary:
-      this->renderDriverPrimary();
-      break;
+  case screen::DriverPrimary:
+    this->renderDriverPrimary();
+    break;
 
-    case screen::MsgGpsFix:
-      this->renderMsgGpsFix();
-      break;
+  case screen::MsgGpsFix:
+    this->renderMsgGpsFix();
+    break;
 
-    case screen::MsgGpsTrigger:
-      this->renderMsgGpsTrigger();
-      break;
+  case screen::MsgGpsTrigger:
+    this->renderMsgGpsTrigger();
+    break;
 
-    case screen::MsgTrackDetectOk:
-      this->renderMsgTrackDetectOk();
-      break;
+  case screen::MsgTrackDetectOk:
+    this->renderMsgTrackDetectOk();
+    break;
 
-    case screen::MsgConfigNoTracks:
-      this->renderMsgConfigNoTracks();
-      break;
-      
-    case screen::MsgBatteryLow:
-      this->renderMsgBatteryLow();
-      break;
-      
-    case screen::MsgEngineTempLow:
-      this->renderMsgEngineTempLow();
-      break;
-      
-    case screen::MsgEngineTempHigh:
-      this->renderMsgEngineTempHigh();
-      break;
+  case screen::MsgConfigNoTracks:
+    this->renderMsgConfigNoTracks();
+    break;
 
-    default:
-      break;
+  case screen::MsgBatteryLow:
+    this->renderMsgBatteryLow();
+    break;
+
+  case screen::MsgEngineTempLow:
+    this->renderMsgEngineTempLow();
+    break;
+
+  case screen::MsgEngineTempHigh:
+    this->renderMsgEngineTempHigh();
+    break;
+
+  case screen::MsgLapCounterStart:
+    this->renderMsgLapCounterStart();
+    break;
+
+  case screen::MsgLapCounterLapTime:
+    this->renderMsgLapCounterLapTime();
+    break;
+
+  default:
+    break;
   }
 
   last_render_ = now;

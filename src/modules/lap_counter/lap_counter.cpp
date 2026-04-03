@@ -4,6 +4,9 @@
 #include "lap_counter.h"
 #include "base/router.h"
 #include "data/general_store.h"
+#include "data/gps_store.h"
+#include "data/track_store.h"
+#include "custom_types.h"
 
 int LapCounter::push(const Task &task) { return queue_.push(task); }
 
@@ -12,3 +15,61 @@ LapCounter::LapCounter() : logger_(nullptr) {};
 LapCounter::LapCounter(SystemLogger *logger) : logger_(logger) {};
 
 LapCounter::~LapCounter() {}
+
+int LapCounter::init() {
+  counting_ = false;
+  count_ = false;
+}
+
+int LapCounter::loop() {
+  Task active_task;
+  int res = queue_.pop(active_task);
+
+  if (res == 0) {
+    if (active_task.target_ == module::LapCounter) {
+
+    } else if (active_task.target_ == module::All) {
+      switch (active_task.type_) {
+
+      case task::AllStartLineTriggered: {
+        GpsData gps;
+        gpsGlobalRead(gps);
+
+        uint32_t base_cs = hhmmsscc_to_cs(gps.time_);
+
+        uint32_t elapsed_cs = (millis() - gps.time_write_time_) / 10;
+
+        uint32_t time_cs = base_cs + elapsed_cs;
+
+        if (!counting_) {
+          counting_ = true;
+          last_trigger_time_ = time_cs;
+
+          router::send(module::Lcd, task::DisplayMsgLapCounterStart, 1000);
+
+        } else {
+          uint32_t lap_time = time_cs - last_trigger_time_;
+
+          lap_times_idx_ = (lap_times_idx_ + 1) & 63;
+
+          lap_times_[lap_times_idx_] = lap_time;
+          count_++;
+
+          last_trigger_time_ = time_cs;
+
+          lastLapTimeGlobalWrite(lap_time);
+
+          router::send(module::Lcd, task::DisplayMsgLapCounterLapTime, 1000);
+        }
+
+        break;
+      }
+
+      default:
+        break;
+      }
+    }
+  }
+
+  return 0;
+}

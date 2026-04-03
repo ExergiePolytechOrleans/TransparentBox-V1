@@ -16,6 +16,7 @@
 #include "modules/battery/battery.h"
 #include "modules/thermocouple/thermocouple.h"
 #include "modules/telemetry/telemetry.h"
+#include "modules/lap_counter/lap_counter.h"
 
 
 SystemLogger *logger = new SystemLogger(&Serial);
@@ -27,6 +28,7 @@ Cmd *command_handler = new Cmd(&Serial, logger);
 Battery *battery_module = new Battery(logger);
 Thermocouple *thermocouple_module = new Thermocouple(logger);
 Telemetry *telemetry_module = new Telemetry(&Serial1, logger);
+LapCounter *lap_counter_modules = new LapCounter(logger);
 
 
 
@@ -40,6 +42,7 @@ void setup() {
   module_registry[module::Battery] = battery_module;
   module_registry[module::Thermocouple] = thermocouple_module;
   module_registry[module::Telemetry] = telemetry_module;
+  module_registry[module::LapCounter] = lap_counter_modules;
 
   display->init();
   display->printMessage("Starting Initialization");
@@ -63,6 +66,7 @@ void setup() {
 
   display->printMessage("GPS Init...");
   gps_module->init();
+  lap_counter_modules->init();
   delay(750);
   display->printMessage("GPS Init Complete");
   delay(750);
@@ -84,6 +88,7 @@ void setup() {
 
 void loop() {
   gps_module->loop();
+  lap_counter_modules->loop();
   display->loop();
   command_handler->parseTask();
   system_config->loop();

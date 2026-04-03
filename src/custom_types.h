@@ -63,6 +63,8 @@ struct GpsData {
     GpsSubData lng_;
     GpsSubData speed_;
     GpsSubData course_;
+    uint32_t time_;
+    uint32_t time_write_time_;
     uint32_t num_fix_;
 };
 
@@ -74,4 +76,16 @@ inline void copyFromVolatile(T& dst, const volatile T& src) {
 template<typename T>
 inline void copyToVolatile(volatile T& dst, const T& src) {
     memcpy((void*)&dst, &src, sizeof(T));
+}
+
+static inline uint32_t hhmmsscc_to_cs(uint32_t t) {
+  uint32_t hours   =  t / 1000000;
+  uint32_t minutes = (t / 10000) % 100;
+  uint32_t seconds = (t / 100)   % 100;
+  uint32_t cs      =  t % 100;
+
+  return hours * 360000 +
+         minutes * 6000 +
+         seconds * 100 +
+         cs;
 }

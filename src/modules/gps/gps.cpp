@@ -128,6 +128,7 @@ int Gps::loop(unsigned long timeout_ms) {
         gpsTriggerGlobalWrite(start_line_trigger_);
         arm_sign_ = 0;
         state_changed_at_ = now;
+        router::send(module::All, task::AllStartLineTriggered);
       }
       break;
     };
@@ -173,7 +174,11 @@ GpsData Gps::getData() {
   output.course_.valid_ = gps_->course.isValid();
   output.course_.value_ = gps_->course.deg();
 
+  output.time_ = gps_->time.value();
+  output.time_write_time_ = millis() - gps_->time.age();
+
   output.num_fix_ = gps_->sentencesWithFix();
+  gps_->time.minute();
 
   return output;
 }
