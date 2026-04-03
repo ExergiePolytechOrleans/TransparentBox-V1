@@ -19,6 +19,7 @@ LapCounter::~LapCounter() {}
 int LapCounter::init() {
   counting_ = false;
   count_ = false;
+  return 0;
 }
 
 int LapCounter::loop() {
@@ -54,6 +55,7 @@ int LapCounter::loop() {
 
           lap_times_[lap_times_idx_] = lap_time;
           count_++;
+          lapCountGlobalWrite(count_);
 
           last_trigger_time_ = time_cs;
 

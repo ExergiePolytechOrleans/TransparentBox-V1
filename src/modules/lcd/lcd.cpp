@@ -163,6 +163,9 @@ int Lcd::renderDriverPrimary() {
 
   int line_trigger;
   gpsTriggerGlobalRead(line_trigger);
+  
+  uint16_t num_laps;
+  lapCountGlobalRead(num_laps);
 
   display_->setCursor(0, 0);
   this->print("GPS:");
@@ -173,24 +176,9 @@ int Lcd::renderDriverPrimary() {
   }
 
   display_->setCursor(7, 0);
-  this->print("TRIG:");
-  switch (line_trigger) {
-  case 0:
-    this->print("I");
-    break;
-
-  case 1:
-    this->print("A");
-    break;
-
-  case 2:
-    this->print("T");
-    break;
-
-  default:
-    this->print("NULL");
-    break;
-  }
+  this->print("LAPS:");
+  if (num_laps < 10) this->print('0');
+  this->print(num_laps, 10);
 
   display_->setCursor(0, 2);
   this->print("SPD:");
