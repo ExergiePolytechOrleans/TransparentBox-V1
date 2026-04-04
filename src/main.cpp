@@ -17,6 +17,7 @@
 #include "modules/thermocouple/thermocouple.h"
 #include "modules/telemetry/telemetry.h"
 #include "modules/lap_counter/lap_counter.h"
+#include "modules/injection_counter/injection_counter.h"
 
 
 SystemLogger *logger = new SystemLogger(&Serial);
@@ -29,6 +30,7 @@ Battery *battery_module = new Battery(logger);
 Thermocouple *thermocouple_module = new Thermocouple(logger);
 Telemetry *telemetry_module = new Telemetry(&Serial1, logger);
 LapCounter *lap_counter_modules = new LapCounter(logger);
+InjectionCounter *inj_counter_module = new InjectionCounter(logger);
 
 
 
@@ -43,6 +45,7 @@ void setup() {
   module_registry[module::Thermocouple] = thermocouple_module;
   module_registry[module::Telemetry] = telemetry_module;
   module_registry[module::LapCounter] = lap_counter_modules;
+  module_registry[module::InjectionCounter] = inj_counter_module;
 
   display->init();
   display->printMessage("Starting Initialization");
@@ -74,6 +77,7 @@ void setup() {
   display->printMessage("Sensors Init...");
   battery_module->init();
   thermocouple_module->init();
+  inj_counter_module->init();
   delay(750);
   display->printMessage("Sensors Init Complete");
   delay(750);
@@ -95,4 +99,5 @@ void loop() {
   battery_module->loop();
   thermocouple_module->loop();
   telemetry_module->loop();
+  inj_counter_module->loop();
 }

@@ -9,6 +9,7 @@ volatile int gps_trigger_global = 0;
 volatile uint32_t last_lap_time_global = 0;
 volatile uint16_t lap_count_global = 0;
 volatile float speed_avg_global = 0;
+volatile uint16_t injection_ctr_global = 0;
 
 void vbatGlobalRead(float &out) { out = vbat_global; }
 
@@ -33,3 +34,7 @@ void lapCountGlobalWrite(const uint16_t &in) { lap_count_global = in; }
 void speedAvgGlobalRead(float &out) { out = speed_avg_global; }
 
 void speedAvgGlobalWrite(const float &in) { speed_avg_global = in; }
+
+void injectionCtrGlobalRead(uint16_t &out) { out = injection_ctr_global; }
+
+void injectionCtrGlobalWrite(const uint16_t &in) { injection_ctr_global = in; }

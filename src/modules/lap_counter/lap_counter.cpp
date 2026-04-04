@@ -88,15 +88,17 @@ int LapCounter::loop() {
     gpsGlobalRead(gps);
     unsigned long now = millis();
     float dt = (now - last_average_time_) / 1000.0f;
+    float speed = gps.speed_.value_;
+    if (speed < 1) speed = 0;
 
     continuous_time_sum_ += dt;
     if (last_average_time_ == 0) {
-      continuous_speed_sum_ += gps.speed_.value_ * dt;
+      continuous_speed_sum_ += speed * dt;
     } else {
       continuous_speed_sum_ +=
-          (gps.speed_.value_ + previous_speed_) * 0.5f * dt;
+          (speed + previous_speed_) * 0.5f * dt;
     }
-    previous_speed_ = gps.speed_.value_;
+    previous_speed_ = speed;
 
     speedAvgGlobalWrite(continuous_speed_sum_ / continuous_time_sum_);
 

@@ -166,9 +166,12 @@ int Lcd::renderDriverPrimary() {
 
   uint16_t num_laps;
   lapCountGlobalRead(num_laps);
-  
+
   float average_speed;
   speedAvgGlobalRead(average_speed);
+
+  uint16_t inj_ctr;
+  injectionCtrGlobalRead(inj_ctr);
 
   if (!base_rendered_) {
     this->clear();
@@ -177,6 +180,9 @@ int Lcd::renderDriverPrimary() {
 
     display_->setCursor(7, 0);
     this->print("LAPS:");
+
+    display_->setCursor(0, 1);
+    this->print("INJ:");
 
     display_->setCursor(0, 2);
     this->print("SPD:");
@@ -203,6 +209,15 @@ int Lcd::renderDriverPrimary() {
   if (num_laps < 10)
     this->print('0');
   this->print(num_laps, 10);
+
+  display_->setCursor(4, 1);
+  if (inj_ctr < 100) {
+    this->print('0');
+    if (inj_ctr < 10) {
+      this->print('0');
+    }
+  }
+  this->print(inj_ctr, 10);
 
   display_->setCursor(4, 2);
   if (gps_data.speed_.value_ < 10.0)
@@ -291,36 +306,36 @@ int Lcd::renderMsgBatteryLow() {
 
 int Lcd::renderMsgEngineTempLow() {
   if (!base_rendered_) {
-  this->clear();
-  display_->setCursor(6, 1);
-  this->print("WARNING");
-  display_->setCursor(2, 2);
-  this->print("ENGINE TEMP LOW");
-  base_rendered_ = true;
+    this->clear();
+    display_->setCursor(6, 1);
+    this->print("WARNING");
+    display_->setCursor(2, 2);
+    this->print("ENGINE TEMP LOW");
+    base_rendered_ = true;
   }
   return 0;
 }
 
 int Lcd::renderMsgEngineTempHigh() {
   if (!base_rendered_) {
-  this->clear();
-  display_->setCursor(6, 1);
-  this->print("WARNING");
-  display_->setCursor(2, 2);
-  this->print("ENGINE TEMP HIGH");
-  base_rendered_ = true;
+    this->clear();
+    display_->setCursor(6, 1);
+    this->print("WARNING");
+    display_->setCursor(2, 2);
+    this->print("ENGINE TEMP HIGH");
+    base_rendered_ = true;
   }
   return 0;
 }
 
 int Lcd::renderMsgLapCounterStart() {
   if (!base_rendered_) {
-  this->clear();
-  display_->setCursor(5, 1);
-  this->print("LAP COUNTER");
-  display_->setCursor(6, 2);
-  this->print("STARTED");
-  base_rendered_ = true;
+    this->clear();
+    display_->setCursor(5, 1);
+    this->print("LAP COUNTER");
+    display_->setCursor(6, 2);
+    this->print("STARTED");
+    base_rendered_ = true;
   }
   return 0;
 }
@@ -328,36 +343,36 @@ int Lcd::renderMsgLapCounterStart() {
 int Lcd::renderMsgLapCounterLapTime() {
 
   if (!base_rendered_) {
-  uint32_t time_cs;
-  lastLapTimeGlobalRead(time_cs);
+    uint32_t time_cs;
+    lastLapTimeGlobalRead(time_cs);
 
-  uint32_t minutes = (time_cs / 6000);
-  uint32_t seconds = (time_cs / 100) % 60;
-  uint32_t cs = time_cs % 100;
+    uint32_t minutes = (time_cs / 6000);
+    uint32_t seconds = (time_cs / 100) % 60;
+    uint32_t cs = time_cs % 100;
 
-  this->clear();
+    this->clear();
 
-  display_->setCursor(6, 1);
-  this->print("LAP TIME");
+    display_->setCursor(6, 1);
+    this->print("LAP TIME");
 
-  display_->setCursor(6, 2);
+    display_->setCursor(6, 2);
 
-  if (minutes < 10)
-    this->print('0');
-  this->print(minutes, 10);
+    if (minutes < 10)
+      this->print('0');
+    this->print(minutes, 10);
 
-  this->print(':');
+    this->print(':');
 
-  if (seconds < 10)
-    this->print('0');
-  this->print(seconds, 10);
+    if (seconds < 10)
+      this->print('0');
+    this->print(seconds, 10);
 
-  this->print('.');
+    this->print('.');
 
-  if (cs < 10)
-    this->print('0');
-  this->print(cs, 10);
-  base_rendered_ = true;
+    if (cs < 10)
+      this->print('0');
+    this->print(cs, 10);
+    base_rendered_ = true;
   }
 
   return 0;

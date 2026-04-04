@@ -16,6 +16,7 @@ enum Id : uint8_t {
     Thermocouple,
     Telemetry,
     LapCounter,
+    InjectionCounter,
     Count,
     Null,
     All,
