@@ -28,6 +28,7 @@ int Telemetry::loop() {
         vbatGlobalRead(packet.vbat);
         GpsData gps;
         gpsGlobalRead(gps);
+        packet.time_stamp = gps.time_;
         packet.lat = gps.lat_.value_;
         packet.lng = gps.lng_.value_;
         packet.speed = gps.speed_.value_;

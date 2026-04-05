@@ -179,7 +179,6 @@ GpsData Gps::getData() {
   output.time_write_time_ = millis() - gps_->time.age();
 
   output.num_fix_ = gps_->sentencesWithFix();
-  gps_->time.minute();
 
   return output;
 }
