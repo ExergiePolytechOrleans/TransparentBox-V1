@@ -30,6 +30,7 @@ private:
     BatterySetLow,
     ThermoSetLow,
     ThermoSetHigh,
+    HelpGlobal,
   };
 
   HardwareSerial *data_stream_;
@@ -62,6 +63,7 @@ private:
   int handleBatterySetLow(unsigned short argc, char *argv[]);
   int handleThermoSetLow(unsigned short argc, char *argv[]);
   int handleThermoSetHigh(unsigned short argc, char *argv[]);
+  int handleHelpGlobal(unsigned short argc);
   int handleUnknownCommand(unsigned short argc, char *argv[]);
 
 public:

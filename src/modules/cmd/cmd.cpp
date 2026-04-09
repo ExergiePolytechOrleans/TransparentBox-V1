@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "cmd.h"
+#include "help.h"
 
 #include <string.h>
 #include "data/track_store.h"
@@ -130,6 +131,10 @@ Cmd::CommandId Cmd::parseCommandName(const char *input) {
 
   if (strcmp(input, "THERMO_SET_HIGH") == 0) {
     return ThermoSetHigh;
+  }
+  
+  if (strcmp(input, "HELP") == 0) {
+    return HelpGlobal;
   }
 
   return Unknown;
@@ -507,6 +512,46 @@ int Cmd::handleThermoSetHigh(unsigned short argc, char* argv[]) {
   return result;
 }
 
+int Cmd::handleHelpGlobal(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("HELP expects no arguments");
+    }
+#endif
+    return 1;
+  }
+#ifdef INFO
+  if (logger_ != nullptr) {
+    String line;
+    line.reserve(96);
+
+    for (size_t idx = 0; cmd_help::kGlobalHelpText[idx] != '\0'; idx++) {
+      char c = cmd_help::kGlobalHelpText[idx];
+
+      if (c == '\r') {
+        continue;
+      }
+
+      if (c == '\n') {
+        if (line.length() > 0) {
+          logger_->info(line);
+          line = "";
+        }
+        continue;
+      }
+
+      line += c;
+    }
+
+    if (line.length() > 0) {
+      logger_->info(line);
+    }
+  }
+#endif
+  return 0;
+}
+
 int Cmd::handleUnknownCommand(unsigned short argc, char *argv[]) {
 #ifdef ERROR
   if (logger_ != nullptr) {
@@ -563,6 +608,9 @@ int Cmd::dispatchCommand(CommandId command, unsigned short argc, char *argv[]) {
 
     case ThermoSetHigh:
       return this->handleThermoSetHigh(argc, argv);
+
+    case HelpGlobal:
+      return this->handleHelpGlobal(argc);
 
     case Unknown:
     default:
