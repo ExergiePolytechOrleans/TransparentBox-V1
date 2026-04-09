@@ -5,7 +5,10 @@
 #include "base/router.h"
 #include "data/general_store.h"
 
-int Telemetry::push(const Task &task) { return queue_.push(task); }
+int Telemetry::push(const Task &task) {
+    (void)task;
+    return 0;
+}
 
 Telemetry::Telemetry(HardwareSerial* data_stream) : logger_(nullptr), data_stream_(data_stream) {}
 

@@ -26,6 +26,25 @@ int Thermocouple::init() {
 int Thermocouple::loop(unsigned long timeout_ms) {
   (void)timeout_ms;
 
+  Task active_task;
+  int res = queue_.pop(active_task);
+  if (res == 0) {
+    if (active_task.target_ == module::All) {
+      switch (active_task.type_) {
+      case task::AllConfigUpdated: {
+        VehicleConfig config;
+        configGlobalRead(config);
+        low_ = config.teng_low_;
+        high_ = config.teng_high_;
+        break;
+      }
+
+      default:
+        break;
+      }
+    }
+  }
+
   if (millis() > last_read_at_ + update_interval_) {
     temperature_ = thermocouple_->readCelsius();
     tengGlobalWrite(temperature_);
@@ -43,28 +62,7 @@ int Thermocouple::loop(unsigned long timeout_ms) {
         warning_sent_at_ = millis();
       }
     }
-
-    Task active_task;
-    int res = queue_.pop(active_task);
-    if (res == 0) {
-      if (active_task.target_ == module::Thermocouple) {
-
-      } else if (active_task.target_ == module::All) {
-
-        switch (active_task.type_) {
-        case task::AllConfigUpdated: {
-          VehicleConfig config;
-          configGlobalRead(config);
-          low_ = config.teng_low_;
-          high_ = config.teng_high_;
-          break;
-        }
-
-        default:
-          break;
-        }
-      };
-    }
-    return 0;
   }
+
+  return 0;
 }

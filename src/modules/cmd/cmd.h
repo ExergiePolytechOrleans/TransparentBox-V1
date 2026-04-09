@@ -7,7 +7,6 @@
 #include <avr/wdt.h>
 
 #include "base/module_base.h"
-#include "base/ring_buffer.h"
 #include "base/task.h"
 #include "custom_types.h"
 #include "modules/logger/system_logger.h"
@@ -39,7 +38,6 @@ private:
   char buffer_[256];
   unsigned int index_ = 0;
   bool buffer_open_ = false;
-  RingBuffer<Task, 16> queue_;
 
   static const unsigned short MAX_ARGS = 10;
 

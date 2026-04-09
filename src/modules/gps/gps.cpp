@@ -43,7 +43,7 @@ int Gps::loop(unsigned long timeout_ms) {
       if (last_fix_value_ == 0 && current_fix_value > 0) {
         router::send(module::Lcd, task::DisplayMsgGpsFix, 2000);
         router::send(module::Config, task::ConfigTrackDetect);
-        router::send(module::All, task::AllGpsFixOk);
+        router::sendAll(module::Gps, task::AllGpsFixOk);
       }
       last_fix_value_ = current_fix_value;
     }
@@ -129,7 +129,7 @@ int Gps::loop(unsigned long timeout_ms) {
         gpsTriggerGlobalWrite(start_line_trigger_);
         arm_sign_ = 0;
         state_changed_at_ = now;
-        router::send(module::All, task::AllStartLineTriggered);
+        router::sendAll(module::Gps, task::AllStartLineTriggered);
       }
       break;
     };

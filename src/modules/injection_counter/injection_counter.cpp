@@ -5,7 +5,10 @@
 #include "base/router.h"
 #include "data/general_store.h"
 
-int InjectionCounter::push(const Task &task) { return queue_.push(task); }
+int InjectionCounter::push(const Task &task) {
+  (void)task;
+  return 0;
+}
 
 InjectionCounter::InjectionCounter() : logger_(nullptr) {};
 
@@ -13,7 +16,10 @@ InjectionCounter::InjectionCounter(SystemLogger *logger) : logger_(logger) {};
 
 InjectionCounter::~InjectionCounter() {};
 
-int InjectionCounter::init() { pinMode(INJ_GPIO, INPUT); }
+int InjectionCounter::init() {
+  pinMode(INJ_GPIO, INPUT);
+  return 0;
+}
 
 int InjectionCounter::loop() {
   unsigned long now = millis();

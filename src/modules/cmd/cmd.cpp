@@ -446,8 +446,13 @@ int Cmd::handleBatterySetLow(unsigned short argc, char* argv[]) {
     logger_->info("Setting warning level for VBAT");
   }
 #endif
-  router::send(module::Config, task::ConfigVbatSetLow, task_data);
-  return 0;
+  int result = router::send(module::Config, task::ConfigVbatSetLow, task_data);
+#ifdef ERROR
+  if (result != 0 && logger_ != nullptr) {
+    logger_->error("Failed to queue BATTERY_SET_LOW config update");
+  }
+#endif
+  return result;
 }
 
 int Cmd::handleThermoSetLow(unsigned short argc, char* argv[]) {
@@ -467,8 +472,13 @@ int Cmd::handleThermoSetLow(unsigned short argc, char* argv[]) {
     logger_->info("Setting low level for TENG");
   }
 #endif
-  router::send(module::Config, task::ConfigTengSetLow, task_data);
-  return 0;
+  int result = router::send(module::Config, task::ConfigTengSetLow, task_data);
+#ifdef ERROR
+  if (result != 0 && logger_ != nullptr) {
+    logger_->error("Failed to queue THERMO_SET_LOW config update");
+  }
+#endif
+  return result;
 }
 
 int Cmd::handleThermoSetHigh(unsigned short argc, char* argv[]) {
@@ -480,16 +490,21 @@ int Cmd::handleThermoSetHigh(unsigned short argc, char* argv[]) {
 #endif
     return 1;
   }
-  float low = strtod(argv[1], nullptr);
+  float high = strtod(argv[1], nullptr);
   uint32_t task_data;
-  memcpy(&task_data, &low, sizeof(uint32_t));
+  memcpy(&task_data, &high, sizeof(uint32_t));
 #ifdef INFO
   if (logger_ != nullptr) {
     logger_->info("Setting high level for TENG");
   }
 #endif
-  router::send(module::Config, task::ConfigTengSetHigh, task_data);
-  return 0;
+  int result = router::send(module::Config, task::ConfigTengSetHigh, task_data);
+#ifdef ERROR
+  if (result != 0 && logger_ != nullptr) {
+    logger_->error("Failed to queue THERMO_SET_HIGH config update");
+  }
+#endif
+  return result;
 }
 
 int Cmd::handleUnknownCommand(unsigned short argc, char *argv[]) {
@@ -579,7 +594,8 @@ int Cmd::tryParse() {
 }
 
 int Cmd::push(const Task &task) {
-  return queue_.push(task);
+  (void)task;
+  return 0;
 }
 
 Cmd::Cmd(HardwareSerial *data_stream)

@@ -10,4 +10,5 @@
 namespace router {
     int send(const Task& task);
     int send(module::Id target, task::Type type, uint32_t data = 0);
+    int sendAll(module::Id source, task::Type type, uint32_t data = 0);
 }

@@ -5,22 +5,31 @@
 #include "router.h"
 
 namespace router {
+int sendAll(module::Id source, task::Type type, uint32_t data) {
+  Task task{module::All, type, data};
+  int ret = 0;
+
+  for (size_t index = 0; index < module::Count; index++) {
+    if (source < module::Count && index == source) {
+      continue;
+    }
+
+    ModuleBase *module_ptr = module_registry[index];
+    if (module_ptr == nullptr) {
+      continue;
+    }
+
+    if (module_ptr->push(task) != 0) {
+      ret = 1;
+    }
+  }
+
+  return ret;
+}
+
 int send(const Task &task) {
   if (task.target_ == module::All) {
-    int ret = 0;
-    for (size_t index = 0; index < module::Count; index++) {
-
-      ModuleBase *module_ptr = module_registry[index];
-
-      if (module_ptr == nullptr) {
-        continue;
-      }
-
-      if (module_ptr->push(task) != 0) {
-        ret = 1;
-      }
-    }
-    return ret;
+    return sendAll(module::Null, task.type_, task.data_);
   }
   if (task.target_ >= module::Count) {
     return 1;

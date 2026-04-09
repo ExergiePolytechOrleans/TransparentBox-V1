@@ -145,7 +145,7 @@ int Config::writeConfig() {
     logger_->info("Config updated and saved to EEPROM");
   }
 #endif
-  router::send(module::All, task::AllConfigUpdated);
+  router::sendAll(module::Config, task::AllConfigUpdated);
   return 0;
 }
 
@@ -303,9 +303,11 @@ int Config::handleActiveTask(unsigned long timeout_ms) {
   }
 
   default:
-    break;
+    // Broadcasts such as AllConfigUpdated may be queued back into Config.
+    // Unsupported tasks must still be completed so the module does not stall.
+    this->taskComplete();
+    return 1;
   }
-  return 0;
 }
 
 int Config::autoInit() {
@@ -391,6 +393,6 @@ int Config::loadTrack(unsigned int idx) {
   track.root_ = track_data;
   trackGlobalWrite(track);
   is_track_loaded_ = true;
-  router::send(module::All, task::AllTrackLoaded);
+  router::sendAll(module::Config, task::AllTrackLoaded);
   return 0;
 }
