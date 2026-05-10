@@ -18,7 +18,8 @@ class RingBuffer {
             }
             
             buffer_[head_] = item;
-            head_ = (head_++) % SIZE;
+            // DO NOT use head_++ this creates an incrementation bug where head_ never goes above 0
+            head_ = (head_ + 1) % SIZE;
             count_++;
             return 0;
         }
@@ -28,7 +29,8 @@ class RingBuffer {
             }
             
             item = buffer_[tail_];
-            tail_ = (tail_++) % SIZE;
+            // DO NOT use tail_++ this creates an incrementation bug where tail_ never goes above 0
+            tail_ = (tail_ + 1) % SIZE;
             count_--;
             return 0;
         }
