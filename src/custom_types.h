@@ -79,13 +79,14 @@ inline void copyToVolatile(volatile T& dst, const T& src) {
 }
 
 static inline uint32_t hhmmsscc_to_cs(uint32_t t) {
-  uint32_t hours   =  t / 1000000;
-  uint32_t minutes = (t / 10000) % 100;
-  uint32_t seconds = (t / 100)   % 100;
-  uint32_t cs      =  t % 100;
+    uint32_t hours   =  t / 1000000;
+    uint32_t minutes = (t / 10000) % 100;
+    uint32_t seconds = (t / 100)   % 100;
+    uint32_t cs      =  t % 100;
 
-  return hours * 360000 +
-         minutes * 6000 +
-         seconds * 100 +
-         cs;
+    if (hours >= 24 || minutes >= 60 || seconds >= 60 || cs >= 100) {
+        return 0;
+    }
+
+    return hours * 360000 + minutes * 6000 + seconds * 100 + cs;
 }

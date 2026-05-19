@@ -133,6 +133,18 @@ Cmd::CommandId Cmd::parseCommandName(const char *input) {
     return ThermoSetHigh;
   }
   
+  if (strcmp(input, "DEBUG_UNLOCK") == 0) {
+    return DebugUnlock;
+  }
+  
+  if (strcmp(input, "DEBUG_LOCK") == 0) {
+    return DebugLock;
+  }
+  
+  if (strcmp(input, "DBG_SEND_BLANK_LAP") == 0) {
+    return DbgSendBlankLap;
+  }
+  
   if (strcmp(input, "HELP") == 0) {
     return HelpGlobal;
   }
@@ -552,6 +564,88 @@ int Cmd::handleHelpGlobal(unsigned short argc) {
   return 0;
 }
 
+int Cmd::handleDebugUnlock(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("DEBUG_UNLOCK expects no arguments");
+    }
+#endif
+    return 1;
+  }
+  if (debug_locked_) {
+    #ifdef INFO
+      if (logger_ != nullptr) {
+        logger_->info("God Mode enabled, system can be put into unknown states, use your powers wisely!");
+      }
+    #endif
+  } else {
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("You are already in God Mode, unfortunately there is nothing higher");
+    }
+    #endif
+  }
+  debug_locked_ = false; 
+  return 0;
+}
+
+int Cmd::handleDebugLock(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("DEBUG_LOCK expects no arguments");
+    }
+#endif
+    return 1;
+  }
+  if (!debug_locked_) {
+    #ifdef INFO
+      if (logger_ != nullptr) {
+        logger_->info("Disabling God Mode, system will restart to be in a known state");
+      }
+    #endif
+    debug_locked_ = true;
+    delay(200);
+    wdt_enable(WDTO_15MS);
+    while (true) {
+    }
+    return 0;
+  } else {
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("God Mode not enabled, nothing to lock");
+    }
+    #endif
+  }
+  return 0;
+}
+
+int Cmd::handleDbgSendBlankLap(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("DBG_SEND_BLANK_LAP expects no arguments");
+    }
+#endif
+    return 1;
+  }
+  if (!debug_locked_) {
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("Sending blank lap packet");
+    }
+    #endif
+    router::sendAll(module::Cmd, task::AllStartLineTriggered);
+  } else {
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("Unable to run debug commands when not in God Mode");
+    }
+    #endif
+  }
+}  
+  
 int Cmd::handleUnknownCommand(unsigned short argc, char *argv[]) {
 #ifdef ERROR
   if (logger_ != nullptr) {
@@ -608,6 +702,15 @@ int Cmd::dispatchCommand(CommandId command, unsigned short argc, char *argv[]) {
 
     case ThermoSetHigh:
       return this->handleThermoSetHigh(argc, argv);
+      
+    case DebugUnlock:
+      return this->handleDebugUnlock(argc);
+      
+    case DebugLock:
+      return this->handleDebugLock(argc);
+      
+    case DbgSendBlankLap:
+      return this->handleDbgSendBlankLap(argc);
 
     case HelpGlobal:
       return this->handleHelpGlobal(argc);

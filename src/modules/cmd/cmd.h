@@ -30,6 +30,9 @@ private:
     BatterySetLow,
     ThermoSetLow,
     ThermoSetHigh,
+    DebugUnlock,
+    DebugLock,
+    DbgSendBlankLap,
     HelpGlobal,
   };
 
@@ -39,6 +42,7 @@ private:
   char buffer_[256];
   unsigned int index_ = 0;
   bool buffer_open_ = false;
+  bool debug_locked_ = true;
 
   static const unsigned short MAX_ARGS = 10;
 
@@ -65,6 +69,9 @@ private:
   int handleThermoSetHigh(unsigned short argc, char *argv[]);
   int handleHelpGlobal(unsigned short argc);
   int handleUnknownCommand(unsigned short argc, char *argv[]);
+  int handleDebugUnlock(unsigned short argc);
+  int handleDebugLock(unsigned short argc);
+  int handleDbgSendBlankLap(unsigned short argc);
 
 public:
   int push(const Task &task) override;

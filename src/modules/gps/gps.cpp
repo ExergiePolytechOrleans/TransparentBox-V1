@@ -175,7 +175,11 @@ GpsData Gps::getData() {
   output.course_.valid_ = gps_->course.isValid();
   output.course_.value_ = gps_->course.deg();
 
-  output.time_ = gps_->time.value();
+  if (gps_->time.isValid()) {
+    output.time_ = gps_->time.value();
+  } else {
+    output.time_ = 0;
+  }
   output.time_write_time_ = millis() - gps_->time.age();
 
   output.num_fix_ = gps_->sentencesWithFix();

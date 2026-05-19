@@ -47,6 +47,7 @@ enum Type : uint8_t {
     ConfigTengSetLow,
     ConfigTengSetHigh,
     BatteryCal,
+    TelemetrySendLapPacket,
     AllConfigUpdated,
     AllTrackLoaded,
     AllStartLineTriggered,

@@ -55,13 +55,15 @@ int LapCounter::loop() {
 
           lap_times_[lap_times_idx_] = lap_time;
           count_++;
+
           lapCountGlobalWrite(count_);
+          lastLapStartGlobalWrite(last_trigger_time_);
+          lastLapTimeGlobalWrite(lap_time);
 
           last_trigger_time_ = time_cs;
 
-          lastLapTimeGlobalWrite(lap_time);
-
           router::send(module::Lcd, task::DisplayMsgLapCounterLapTime, 1000);
+          router::send(module::Telemetry, task::TelemetrySendLapPacket);
         }
 
         break;

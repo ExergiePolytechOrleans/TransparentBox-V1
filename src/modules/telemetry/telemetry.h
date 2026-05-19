@@ -17,6 +17,7 @@ private:
   unsigned long update_interval_ = 1000;
   TelemetryLoRaHeader lora_header_;
   TelemetryUARTHeader uart_header_;
+  RingBuffer<Task, 16> queue_;
 
 public:
   int push(const Task &task) override;

@@ -8,6 +8,7 @@ extern volatile float vbat_global;
 extern volatile float teng_global;
 extern volatile int gps_trigger_global;
 extern volatile uint32_t last_lap_time_global;
+extern volatile uint32_t last_lap_start_global;
 extern volatile uint16_t lap_count_global;
 extern volatile float speed_avg_global;
 extern volatile uint16_t injection_ctr_global;
@@ -23,6 +24,9 @@ void gpsTriggerGlobalWrite(const int& in);
 
 void lastLapTimeGlobalRead(uint32_t& out);
 void lastLapTimeGlobalWrite(const uint32_t& in);
+
+void lastLapStartGlobalRead(uint32_t& out);
+void lastLapStartGlobalWrite(const uint32_t& in);
 
 void lapCountGlobalRead(uint16_t& out);
 void lapCountGlobalWrite(const uint16_t& in);

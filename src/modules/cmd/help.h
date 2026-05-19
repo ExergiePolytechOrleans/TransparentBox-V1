@@ -20,5 +20,8 @@ static constexpr char kGlobalHelpText[] =
     "  BATTERY_PRINT_VBAT\n"
     "  BATTERY_SET_LOW,<voltage>\n"
     "  THERMO_SET_LOW,<temperature>\n"
-    "  THERMO_SET_HIGH,<temperature>\n";
+    "  THERMO_SET_HIGH,<temperature>\n"
+    "  DEBUG_UNLOCK\n"
+    "  DEBUG_LOCK\n"
+    "  DBG_SEND_BLANK_LAP\n";
 } // namespace cmd_help

@@ -5,10 +5,7 @@
 #include "base/router.h"
 #include "data/general_store.h"
 
-int Telemetry::push(const Task &task) {
-    (void)task;
-    return 0;
-}
+int Telemetry::push(const Task &task) { return queue_.push(task); }
 
 Telemetry::Telemetry(HardwareSerial* data_stream) : logger_(nullptr), data_stream_(data_stream) {}
 
@@ -46,6 +43,39 @@ int Telemetry::loop() {
             data_stream_->write((uint8_t*)&packet, sizeof(packet));
         }
         last_sent_ = millis();
+    } else {
+        
+        Task active_task;
+        int res = queue_.pop(active_task);
+
+        if (res == 0) {
+            if (active_task.target_ == module::Telemetry) {
+                switch (active_task.type_) {
+                    case task::TelemetrySendLapPacket: {
+                        TelemetryPacket3 packet;
+                        lastLapStartGlobalRead(packet.start_time_);
+                        lastLapTimeGlobalRead(packet.duration_);
+                        lapCountGlobalRead(packet.count_);
+                        lora_header_.size_ = sizeof(packet);
+                        lora_header_.crc16_ = crc16_ccitt((uint8_t*)&packet, sizeof(packet));
+                        lora_header_.version_ = 3;
+                        uart_header_.size_ = sizeof(packet) + sizeof(lora_header_);
+                        
+                        if (data_stream_->availableForWrite()) {
+                            data_stream_->write((uint8_t*)&uart_header_, sizeof(uart_header_));
+                            data_stream_->write((uint8_t*)&lora_header_, sizeof(lora_header_));
+                            data_stream_->write((uint8_t*)&packet, sizeof(packet));
+                        }
+                        #ifdef DEBUG
+                        if (logger_ != nullptr) {
+                            logger_->debug("Send lap complete telemetry packet");
+                        }
+                        #endif
+                    } 
+                }
+            } else if (active_task.target_ == module::All) {
+            }
+        }
     }
     return 0;
 }
