@@ -34,6 +34,8 @@ private:
     DebugUnlock,
     DebugLock,
     DbgSendBlankLap,
+    DbgCorruptConfig,
+    DbgCorruptTrack,
     HelpGlobal,
   };
 
@@ -74,6 +76,8 @@ private:
   int handleDebugUnlock(unsigned short argc);
   int handleDebugLock(unsigned short argc);
   int handleDbgSendBlankLap(unsigned short argc);
+  int handleDbgCorruptConfig(unsigned short argc);
+  int handleDbgCorruptTrack(unsigned short argc, char *argv[]);
 
 public:
   int push(const Task &task) override;

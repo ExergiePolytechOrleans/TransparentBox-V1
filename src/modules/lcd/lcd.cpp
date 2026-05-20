@@ -390,6 +390,20 @@ int Lcd::renderMsgCorruptedConfig() {
   return 0;
 }
 
+int Lcd::renderMsgCorruptedTrack() {
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(3, 1);
+    this->print("CRITICAL ERROR");
+    display_->setCursor(2, 2);
+    this->print("CORRUPTED TRACK");
+    display_->setCursor(0, 3);
+    this->print("Serial for more info");
+    base_rendered_ = true;
+  }
+  return 0;
+}
+
 int Lcd::push(const Task &task) { return queue_.push(task); }
 
 Lcd::Lcd()
@@ -609,6 +623,10 @@ int Lcd::loop(unsigned long timeout_ms) {
     case task::DisplayMsgCorruptedConfig:
       base_rendered_ = false;
       activateMessage(screen::MsgCorruptedConfig, next_task.data_);
+      
+    case task::DisplayMsgCorruptedTrack:
+      base_rendered_ = false;
+      activateMessage(screen::MsgCorruptedTrack, next_task.data_);
 
     default:
       break;
@@ -686,6 +704,10 @@ int Lcd::loop(unsigned long timeout_ms) {
       
   case screen::MsgCorruptedConfig:
     this->renderMsgCorruptedConfig();
+    break;
+      
+  case screen::MsgCorruptedTrack:
+    this->renderMsgCorruptedTrack();
     break;
 
   default:

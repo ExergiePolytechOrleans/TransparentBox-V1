@@ -21,7 +21,10 @@ static constexpr char kGlobalHelpText[] =
     "  BATTERY_SET_LOW,<voltage>\n"
     "  THERMO_SET_LOW,<temperature>\n"
     "  THERMO_SET_HIGH,<temperature>\n"
+    "  THERMO_SET_OFFSET,<offset>\n"
     "  DEBUG_UNLOCK\n"
     "  DEBUG_LOCK\n"
-    "  DBG_SEND_BLANK_LAP\n";
+    "  DBG_SEND_BLANK_LAP\n"
+    "  DBG_CORRUPT_CONFIG\n"
+    "  DBG_CORRUPT_TRACK,<slot>\n";
 } // namespace cmd_help

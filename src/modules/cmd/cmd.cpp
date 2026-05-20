@@ -10,6 +10,7 @@
 #include "data/config_store.h"
 #include "data/general_store.h"
 #include "base/router.h"
+#include "data/eeprom_layout.h"
 
 char *Cmd::trimArg(char *input) {
   if (input == nullptr) {
@@ -147,6 +148,14 @@ Cmd::CommandId Cmd::parseCommandName(const char *input) {
   
   if (strcmp(input, "DBG_SEND_BLANK_LAP") == 0) {
     return DbgSendBlankLap;
+  }
+  
+  if (strcmp(input, "DBG_CORRUPT_CONFIG") == 0) {
+    return DbgCorruptConfig;
+  }
+
+  if (strcmp(input, "DBG_CORRUPT_TRACK") == 0) {
+    return DbgCorruptTrack;
   }
   
   if (strcmp(input, "HELP") == 0) {
@@ -676,6 +685,72 @@ int Cmd::handleDbgSendBlankLap(unsigned short argc) {
     #endif
   }
 }  
+
+
+int Cmd::handleDbgCorruptConfig(unsigned short argc) {
+  if (argc != 1) {
+#ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("DBG_CORRUPT_CONFIG expects no arguments");
+    }
+#endif
+    return 1;
+  }
+  if (!debug_locked_) {
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("Corrupting config");
+    }
+    #endif
+    uint16_t corrupted = 0xFFFF;
+    EEPROM.put(eeprom_layout::configCRCAddr(), corrupted);
+  } else {
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("Unable to run debug commands when not in God Mode");
+    }
+    #endif
+  }
+}  
+
+
+int Cmd::handleDbgCorruptTrack(unsigned short argc, char* argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("DBG_CORRUPT_TRACK expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+
+
+  if (!debug_locked_) {
+    unsigned short id;
+
+    if (parseTrackSlotId(argv[1], id) != 0) {
+#ifdef ERROR
+      if (logger_ != nullptr) {
+        logger_->error(String("ID out of range: ") + String(argv[1]));
+      }
+#endif
+      return 1;
+    }
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("Corrupting track");
+    }
+    #endif
+    uint16_t corrupted = 0xFFFF;
+    EEPROM.put(eeprom_layout::trackCRCAddr(id), corrupted);
+  } else {
+    #ifdef INFO
+    if (logger_ != nullptr) {
+      logger_->info("Unable to run debug commands when not in God Mode");
+    }
+    #endif
+  }
+}  
   
 int Cmd::handleUnknownCommand(unsigned short argc, char *argv[]) {
 #ifdef ERROR
@@ -745,6 +820,12 @@ int Cmd::dispatchCommand(CommandId command, unsigned short argc, char *argv[]) {
       
     case DbgSendBlankLap:
       return this->handleDbgSendBlankLap(argc);
+      
+    case DbgCorruptConfig:
+      return this->handleDbgCorruptConfig(argc);
+
+    case DbgCorruptTrack:
+      return this->handleDbgCorruptTrack(argc, argv);
 
     case HelpGlobal:
       return this->handleHelpGlobal(argc);

@@ -39,6 +39,7 @@ enum Type : uint8_t {
     DisplayMsgLapCounterStart,
     DisplayMsgLapCounterLapTime,
     DisplayMsgCorruptedConfig,
+    DisplayMsgCorruptedTrack,
     ConfigTrackDetect,
     ConfigWriteTempTrack,
     ConfigTrackDelete,

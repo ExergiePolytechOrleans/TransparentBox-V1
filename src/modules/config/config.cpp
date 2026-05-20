@@ -29,6 +29,8 @@ int Config::writeTrack(const TrackData &track_data) {
     return 1;
   }
   EEPROM.put(eeprom_layout::trackSlotAddr(track_copy.id_), track_copy);
+  uint16_t crc = crc16_ccitt((uint8_t*)&track_copy, sizeof(track_copy));
+  EEPROM.put(eeprom_layout::trackCRCAddr(track_copy.id_), crc);
   config_.track_slot_occupied_[track_copy.id_ - 1] = true;
   this->writeConfig();
 #ifdef INFO
@@ -153,6 +155,26 @@ int Config::readConfig() {
   }
   configGlobalWrite(config_);
   router::sendAll(module::Config, task::AllConfigUpdated);
+  uint8_t i = 1;
+  for (bool status : config_.track_slot_occupied_) {
+    TrackData track;
+    int res = getTrack(i, track);
+    if (res == 0) {
+      uint16_t track_crc;
+      EEPROM.get(eeprom_layout::trackCRCAddr(i), track_crc);
+      int crc_res = crc16_ccitt_check((uint8_t*)&track, sizeof(track), track_crc);
+      if (crc_res != 0) {
+        #ifdef ERROR
+        if (logger_ != nullptr) {
+          logger_->error("Corrupted track slot: " + String(track.id_));
+        }
+        #endif
+        router::send(module::Lcd, task::DisplayMsgCorruptedTrack, 5000);
+        return 1;
+      }
+    }
+    i++;
+  }
   return 0;
 }
 
