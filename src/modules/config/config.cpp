@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "data/track_store.h"
+#include "telemetry_common/telemetry_common.h"
 
 #include <math.h>
 #include <string.h>
@@ -125,6 +126,11 @@ int Config::writeTengHigh(float value) {
   return this->writeConfig();
 }
 
+int Config::writeTengOffset(float value) {
+  config_.teng_offset_ = value;
+  return this->writeConfig();
+}
+
 Config::Config() : logger_(nullptr), valid_config_(true) {}
 
 Config::Config(SystemLogger *logger) : logger_(logger), valid_config_(true) {}
@@ -132,13 +138,28 @@ Config::Config(SystemLogger *logger) : logger_(logger), valid_config_(true) {}
 Config::~Config() {}
 
 int Config::readConfig() {
+  uint16_t crc;
   EEPROM.get(eeprom_layout::CONFIG_ADDR, config_);
+  EEPROM.get(eeprom_layout::configCRCAddr(), crc);
+  int res = crc16_ccitt_check((uint8_t*)&config_, sizeof(config_), crc);
+  if (res != 0) {
+    #ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("Corrupted config, reset and regenerate config required");
+    }
+    #endif
+    router::send(module::Lcd, task::DisplayMsgCorruptedConfig, 5000);
+    return 1;
+  }
   configGlobalWrite(config_);
+  router::sendAll(module::Config, task::AllConfigUpdated);
   return 0;
 }
 
 int Config::writeConfig() {
+  uint16_t crc = crc16_ccitt((uint8_t*)&config_, sizeof(config_));
   EEPROM.put(eeprom_layout::CONFIG_ADDR, config_);
+  EEPROM.put(eeprom_layout::configCRCAddr(), crc);
   configGlobalWrite(config_);
 #ifdef INFO
   if (logger_ != nullptr) {
@@ -300,6 +321,14 @@ int Config::handleActiveTask(unsigned long timeout_ms) {
     int result = this->writeTengHigh(high_value);
     this->taskComplete();
     return result;
+  }
+    
+  case task::ConfigTengSetOffset: {
+    float offset_value;
+    memcpy(&offset_value, &active_task_.data_, sizeof(float));
+      int result = this->writeTengOffset(offset_value);
+      this->taskComplete();
+      return result;
   }
 
   default:

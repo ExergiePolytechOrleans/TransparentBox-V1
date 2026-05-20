@@ -31,6 +31,7 @@ enum LcdScreen : uint8_t {
   MsgEngineTempHigh,
   MsgLapCounterStart,
   MsgLapCounterLapTime,
+  MsgCorruptedConfig,
 };
 
 } // namespace screen
@@ -79,6 +80,7 @@ private:
   int renderMsgEngineTempHigh();
   int renderMsgLapCounterStart();
   int renderMsgLapCounterLapTime();
+  int renderMsgCorruptedConfig();
 
 public:
   int push(const Task &task) override;

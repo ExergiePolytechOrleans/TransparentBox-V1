@@ -30,6 +30,7 @@ private:
     BatterySetLow,
     ThermoSetLow,
     ThermoSetHigh,
+    ThermoSetOffset,
     DebugUnlock,
     DebugLock,
     DbgSendBlankLap,
@@ -67,6 +68,7 @@ private:
   int handleBatterySetLow(unsigned short argc, char *argv[]);
   int handleThermoSetLow(unsigned short argc, char *argv[]);
   int handleThermoSetHigh(unsigned short argc, char *argv[]);
+  int handleThermoSetOffset(unsigned short argc, char *argv[]);
   int handleHelpGlobal(unsigned short argc);
   int handleUnknownCommand(unsigned short argc, char *argv[]);
   int handleDebugUnlock(unsigned short argc);

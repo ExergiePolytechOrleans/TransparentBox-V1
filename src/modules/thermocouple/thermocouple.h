@@ -20,6 +20,7 @@ private:
   float temperature_;
   float low_;
   float high_;
+  float offset_;
   unsigned long update_interval_ = 1000;
   unsigned long last_read_at_ = 0;
   unsigned long warning_sent_at_ = 0;

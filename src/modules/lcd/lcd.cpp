@@ -378,6 +378,18 @@ int Lcd::renderMsgLapCounterLapTime() {
   return 0;
 }
 
+int Lcd::renderMsgCorruptedConfig() {
+  if (!base_rendered_) {
+    this->clear();
+    display_->setCursor(3, 1);
+    this->print("CRITICAL ERROR");
+    display_->setCursor(2, 2);
+    this->print("CONFIG CORRUPTED");
+    base_rendered_ = true;
+  }
+  return 0;
+}
+
 int Lcd::push(const Task &task) { return queue_.push(task); }
 
 Lcd::Lcd()
@@ -593,6 +605,10 @@ int Lcd::loop(unsigned long timeout_ms) {
     case task::DisplayMsgLapCounterLapTime:
       base_rendered_ = false;
       activateMessage(screen::MsgLapCounterLapTime, next_task.data_);
+      
+    case task::DisplayMsgCorruptedConfig:
+      base_rendered_ = false;
+      activateMessage(screen::MsgCorruptedConfig, next_task.data_);
 
     default:
       break;
@@ -666,6 +682,10 @@ int Lcd::loop(unsigned long timeout_ms) {
 
   case screen::MsgLapCounterLapTime:
     this->renderMsgLapCounterLapTime();
+    break;
+      
+  case screen::MsgCorruptedConfig:
+    this->renderMsgCorruptedConfig();
     break;
 
   default:

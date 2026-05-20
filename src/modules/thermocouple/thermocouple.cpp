@@ -36,6 +36,7 @@ int Thermocouple::loop(unsigned long timeout_ms) {
         configGlobalRead(config);
         low_ = config.teng_low_;
         high_ = config.teng_high_;
+        offset_ = config.teng_offset_;
         break;
       }
 
@@ -46,7 +47,7 @@ int Thermocouple::loop(unsigned long timeout_ms) {
   }
 
   if (millis() > last_read_at_ + update_interval_) {
-    temperature_ = thermocouple_->readCelsius();
+    temperature_ = thermocouple_->readCelsius() + offset_;
     tengGlobalWrite(temperature_);
     last_read_at_ = millis();
     if (temperature_ > high_) {

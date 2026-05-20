@@ -51,6 +51,7 @@ private:
   int writeVbatLow(float value);
   int writeTengLow(float value);
   int writeTengHigh(float value);
+  int writeTengOffset(float value);
 
 public:
   int push(const Task &task) override;

@@ -133,6 +133,10 @@ Cmd::CommandId Cmd::parseCommandName(const char *input) {
     return ThermoSetHigh;
   }
   
+  if (strcmp(input, "THERMO_SET_OFFSET") == 0) {
+    return ThermoSetOffset;
+  }
+  
   if (strcmp(input, "DEBUG_UNLOCK") == 0) {
     return DebugUnlock;
   }
@@ -524,6 +528,33 @@ int Cmd::handleThermoSetHigh(unsigned short argc, char* argv[]) {
   return result;
 }
 
+
+int Cmd::handleThermoSetOffset(unsigned short argc, char* argv[]) {
+  if (argc != 2) {
+#ifdef ERROR
+    if (logger_ != nullptr) {
+      logger_->error("THERMO_SET_OFFSET expects 1 argument");
+    }
+#endif
+    return 1;
+  }
+  float offset = strtod(argv[1], nullptr);
+  uint32_t task_data;
+  memcpy(&task_data, &offset, sizeof(uint32_t));
+#ifdef INFO
+  if (logger_ != nullptr) {
+    logger_->info("Setting offset for TENG");
+  }
+#endif
+  int result = router::send(module::Config, task::ConfigTengSetOffset, task_data);
+#ifdef ERROR
+  if (result != 0 && logger_ != nullptr) {
+    logger_->error("Failed to queue THERMO_SET_OFFSET config update");
+  }
+#endif
+  return result;
+}
+
 int Cmd::handleHelpGlobal(unsigned short argc) {
   if (argc != 1) {
 #ifdef ERROR
@@ -702,6 +733,9 @@ int Cmd::dispatchCommand(CommandId command, unsigned short argc, char *argv[]) {
 
     case ThermoSetHigh:
       return this->handleThermoSetHigh(argc, argv);
+      
+    case ThermoSetOffset:
+      return this->handleThermoSetOffset(argc, argv);
       
     case DebugUnlock:
       return this->handleDebugUnlock(argc);

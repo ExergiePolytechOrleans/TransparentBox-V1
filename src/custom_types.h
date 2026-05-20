@@ -16,6 +16,7 @@ struct VehicleConfig {
     float vbat_low_ = 0;
     float teng_low_ = 0;
     float teng_high_ = 0;
+    float teng_offset_ = 0;
 };
 
 struct LatLng {
